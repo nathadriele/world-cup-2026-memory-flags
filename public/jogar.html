@@ -17,6 +17,39 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+.welcome-title {
+  flex: 1 !important;
+  text-align: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(0.9rem, 2.5vw, 1.4rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-1));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: welcomeShine 4s linear infinite, welcomeFadeIn 0.6s ease;
+  padding: 4px 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+
+@keyframes welcomeShine {
+  to { background-position: 200% center; }
+}
+
+@keyframes welcomeFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.main-header {
+  justify-content: center;
+}
+
 .lobby-wrap {
   max-width: 880px;
   margin: 0 auto;
@@ -58,13 +91,15 @@
 
 .players-count-selector {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 22px;
 }
 
 .count-option {
-  flex: 1;
-  padding: 16px 8px;
+  flex: 1 1 calc(25% - 8px);
+  min-width: 60px;
+  padding: 14px 6px;
   text-align: center;
   border: 2px solid var(--border);
   background: var(--bg-surface);
@@ -72,7 +107,7 @@
   cursor: pointer;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   color: var(--text-secondary);
   transition: all 0.15s;
 }
@@ -285,15 +320,15 @@
 
 .game-area {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 20px;
+  grid-template-columns: 220px 1fr;
+  gap: 14px;
   align-items: start;
 }
 
 .side-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   position: sticky;
   top: 20px;
 }
@@ -302,7 +337,7 @@
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 18px;
+  padding: 14px;
 }
 
 .panel-title {
@@ -318,8 +353,15 @@
 .scoreboard {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  padding-right: 4px;
 }
+
+.scoreboard::-webkit-scrollbar { width: 5px; }
+.scoreboard::-webkit-scrollbar-track { background: transparent; }
+.scoreboard::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 
 .score-row {
   display: flex;
@@ -396,10 +438,10 @@
 .deck-mini-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  max-height: 70px;
+  gap: 5px;
+  max-height: 100px;
   overflow-y: auto;
-  padding: 2px;
+  padding: 3px;
   margin-top: 6px;
 }
 
@@ -411,11 +453,12 @@
 }
 
 .deck-mini-grid img {
-  width: 22px;
-  height: 15px;
+  width: 30px;
+  height: 20px;
   object-fit: cover;
-  border-radius: 2px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  border: 1px solid rgba(0,0,0,0.08);
   animation: fadeInUp 0.3s ease;
 }
 
@@ -540,8 +583,9 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 7px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
 }
 
 .mem-card {
@@ -603,22 +647,23 @@
 .mem-card-back-watermark {
   font-family: 'Nunito', sans-serif;
   font-weight: 800;
-  font-size: 0.6rem;
-  color: rgba(255,255,255,0.65);
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
   text-align: center;
-  line-height: 1.2;
-  max-width: 90%;
-  word-spacing: 1px;
+  line-height: 1.15;
+  max-width: 95%;
+  word-spacing: 0.5px;
+  letter-spacing: -0.3px;
   margin-top: 4px;
   text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
 .mem-card-back-trophies {
-  width: 30%;
-  max-width: 36px;
+  width: 28%;
+  max-width: 32px;
   height: auto;
-  opacity: 0.3;
-  margin-bottom: 2px;
+  opacity: 0.25;
+  margin-bottom: 4px;
 }
 
 .mem-card-front {
@@ -629,21 +674,21 @@
 }
 
 .mem-card-flag {
-  width: 72%;
-  max-width: 60px;
+  width: 95%;
+  max-width: 130px;
   aspect-ratio: 3/2;
   object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
-  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  border: 1px solid rgba(0,0,0,0.08);
 }
 
 .mem-card-name {
-  font-size: 0.55rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--text-secondary);
   text-align: center;
-  line-height: 1.1;
+  line-height: 1.15;
   padding: 0 2px;
 }
 
@@ -1265,12 +1310,14 @@
   }
   .side-panel {
     position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    max-height: none;
   }
   .panel-block {
-    flex: 1;
-    min-width: 260px;
+    width: 100%;
+  }
+  .scoreboard {
+    max-height: 300px;
   }
 }
 
@@ -1285,14 +1332,50 @@
 }
 
 @media (max-width: 700px) {
-  #board { grid-template-columns: repeat(6, 1fr); gap: 4px; }
-  .mem-card-name { display: none; }
+  #board { grid-template-columns: repeat(6, 1fr); gap: 6px; }
   .side-panel { flex-direction: column; }
   .main-content { padding: 16px; }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 500px) {
   #board { grid-template-columns: repeat(4, 1fr); }
+  .mem-card-name { display: none; }
+  .podium-slot-gold .podium-pillar { width: 80px; height: 90px; font-size: 1.3rem; }
+  .podium-slot-silver .podium-pillar { width: 72px; height: 68px; font-size: 1.2rem; }
+  .podium-slot-bronze .podium-pillar { width: 64px; height: 50px; font-size: 1.1rem; }
+  .podium-container { gap: 4px; padding-top: 24px; min-height: 220px; }
+  .podium-avatar { width: 40px; height: 40px; font-size: 1rem; }
+  .podium-player-name { font-size: 0.7rem; }
+  .podium-player-score { font-size: 0.65rem; }
+  .podium-crown { font-size: 1.2rem; }
+  .validation-box { padding: 16px 12px; }
+  .validation-title { font-size: 1.05rem; }
+  .val-country-name { font-size: 1rem; }
+  .val-statement-text { font-size: 0.85rem; }
+  .result-overlay-box { padding: 20px 14px 18px; }
+  .count-option { font-size: 1rem; padding: 10px 4px; }
+  .count-option-label { font-size: 0.6rem; }
+  .room-code-value { font-size: 1.6rem; letter-spacing: 4px; }
+  .lobby-title { font-size: 1rem; }
+  .score-row { padding: 8px; }
+  .score-name { font-size: 0.78rem; }
+  .score-meta { font-size: 0.66rem; }
+  .score-count { font-size: 0.85rem; }
+  .score-flag { width: 28px; height: 19px; }
+  .deck-mini-grid { max-height: 70px; }
+  .deck-mini-grid img { width: 24px; height: 16px; }
+  .scoreboard { max-height: 250px; }
+  .turn-timer-text { font-size: 0.85rem; }
+}
+
+@media (max-width: 360px) {
+  #board { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .podium-slot-gold .podium-pillar { width: 68px; }
+  .podium-slot-silver .podium-pillar { width: 60px; }
+  .podium-slot-bronze .podium-pillar { width: 54px; }
+  .podium-container { gap: 2px; }
+  .main-content { padding: 10px; }
+  .lobby-section { padding: 14px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1321,6 +1404,104 @@
   min-width: 280px;
 }
 .center-popup.fade-out { animation: popOutScale 0.3s ease forwards; }
+
+.popup-turn-flag { margin-bottom: 12px; }
+.popup-turn-msg { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+
+/* === Revelar Cartas Button === */
+.btn-peek-cards {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 200;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-peek-cards:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-peek-cards:active { transform: translateY(0); }
+.btn-peek-cards.active { background: linear-gradient(135deg, var(--accent-danger), #c81d2e); }
+
+#screen-game.active .btn-peek-cards { display: flex; }
+
+/* Peek Modal */
+.peek-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,15,40,0.7);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  padding: 20px;
+}
+.peek-modal-overlay.show { display: flex; }
+
+.peek-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 32px 28px 24px;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  animation: popInScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.peek-modal-icon {
+  color: var(--accent-1);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.peek-modal-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.peek-modal-msg {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.peek-modal-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+  line-height: 1.4;
+}
+
+.peek-modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.peek-modal-buttons .btn { flex: 1; max-width: 160px; }
+
+/* Peek mode - dim collected cards, show all hidden */
+.mem-card.peek-revealed { opacity: 0.55; }
+.board-container.peek-mode .mem-card:not(.collected):not(.flipped) {
+  cursor: default;
+}
 @keyframes popInScale {
   from { opacity: 0; transform: scale(0.7); }
   to { opacity: 1; transform: scale(1); }
@@ -1454,7 +1635,7 @@
   <div id="sidebar-mount"></div>
   <main class="main-content">
     <div class="main-header">
-      <h1 class="page-title">Jogar</h1>
+      <h1 class="page-title welcome-title" id="welcome-title">Bem-vindo a partida! Boa sorte!</h1>
       <div class="online-badge" id="online-badge">
         <span class="online-dot"></span>
         <span id="online-count">0 online</span>
@@ -1474,6 +1655,10 @@
               <div class="count-option selected" data-count="2">2<span class="count-option-label">Jogadores</span></div>
               <div class="count-option" data-count="3">3<span class="count-option-label">Jogadores</span></div>
               <div class="count-option" data-count="4">4<span class="count-option-label">Jogadores</span></div>
+              <div class="count-option" data-count="5">5<span class="count-option-label">Jogadores</span></div>
+              <div class="count-option" data-count="6">6<span class="count-option-label">Jogadores</span></div>
+              <div class="count-option" data-count="7">7<span class="count-option-label">Jogadores</span></div>
+              <div class="count-option" data-count="8">8<span class="count-option-label">Jogadores</span></div>
             </div>
           </div>
           <div id="preview-checkbox-container">
@@ -1523,6 +1708,24 @@
     </section>
 
     <section id="screen-game" class="screen">
+      <button class="btn-peek-cards" id="btn-peek-cards" title="Revelar Cartas">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Revelar</span>
+      </button>
+      <div class="peek-modal-overlay" id="peek-modal-overlay">
+        <div class="peek-modal">
+          <div class="peek-modal-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div class="peek-modal-title">Revelar Cartas</div>
+          <div class="peek-modal-msg">Tem certeza que deseja revelar as cartas?</div>
+          <div class="peek-modal-sub">Apenas voce vera todas as cartas. Os outros jogadores nao serao afetados.</div>
+          <div class="peek-modal-buttons">
+            <button class="btn btn-secondary" id="btn-peek-cancel">Cancelar</button>
+            <button class="btn btn-primary" id="btn-peek-confirm">Sim, Revelar</button>
+          </div>
+        </div>
+      </div>
       <div class="game-area">
         <aside class="side-panel">
           <div class="panel-block" id="turn-block">
@@ -1664,6 +1867,8 @@ const state = {
   valStatement: '',
   inValidation: false,
   pendingClick: null,
+  lockBoard: false,
+  peekMode: false,
   selectedCount: 2
 };
 
@@ -1748,6 +1953,81 @@ $('btn-exit-game').addEventListener('click', () => {
   resetLobby();
 });
 
+// === Revelar Cartas (individual) ===
+$('btn-peek-cards').addEventListener('click', () => {
+  if (!state.active) return;
+  if (state.peekMode) {
+    // Already peeking - turn off directly
+    exitPeekMode();
+  } else {
+    // Show confirmation modal
+    $('peek-modal-overlay').classList.add('show');
+  }
+});
+
+$('btn-peek-cancel').addEventListener('click', () => {
+  $('peek-modal-overlay').classList.remove('show');
+});
+
+$('btn-peek-confirm').addEventListener('click', () => {
+  $('peek-modal-overlay').classList.remove('show');
+  // Request all cards from server (server sends ONLY to this socket)
+  socket.emit('reveal_cards_request');
+});
+
+// Click outside modal to cancel
+$('peek-modal-overlay').addEventListener('click', (e) => {
+  if (e.target === $('peek-modal-overlay')) {
+    $('peek-modal-overlay').classList.remove('show');
+  }
+});
+
+socket.on('reveal_all_cards', ({ cards }) => {
+  if (!state.active) return;
+  state.peekMode = true;
+  // Store card data for all cards
+  Object.keys(cards).forEach(idx => {
+    var i = parseInt(idx);
+    state.cards[i] = { flagCode: cards[idx].flagCode, countryName: cards[idx].countryName };
+  });
+  // Reveal all hidden cards locally (visual only)
+  var allCards = document.querySelectorAll('.mem-card');
+  allCards.forEach(function(cardEl) {
+    var i = parseInt(cardEl.dataset.index);
+    if (state.board[i] === 'hidden' && state.cards[i]) {
+      cardEl.classList.add('flipped', 'peek-revealed');
+      var front = cardEl.querySelector('.mem-card-front');
+      if (front && !front.querySelector('img')) {
+        front.innerHTML =
+          '<img src="' + flagUrl(state.cards[i].flagCode) + '" alt="' + escapeHtml(state.cards[i].countryName) + '" class="mem-card-flag" loading="lazy">' +
+          '<span class="mem-card-name">' + escapeHtml(state.cards[i].countryName) + '</span>';
+      }
+    }
+  });
+  var boardContainer = document.querySelector('.board-container');
+  if (boardContainer) boardContainer.classList.add('peek-mode');
+  $('btn-peek-cards').classList.add('active');
+  $('btn-peek-cards').querySelector('span').textContent = 'Ocultar';
+});
+
+function exitPeekMode() {
+  state.peekMode = false;
+  // Hide all peek-revealed cards
+  var allCards = document.querySelectorAll('.mem-card');
+  allCards.forEach(function(cardEl) {
+    var i = parseInt(cardEl.dataset.index);
+    if (state.board[i] === 'hidden') {
+      cardEl.classList.remove('flipped', 'peek-revealed');
+      var front = cardEl.querySelector('.mem-card-front');
+      if (front) front.innerHTML = '';
+    }
+  });
+  var boardContainer = document.querySelector('.board-container');
+  if (boardContainer) boardContainer.classList.remove('peek-mode');
+  $('btn-peek-cards').classList.remove('active');
+  $('btn-peek-cards').querySelector('span').textContent = 'Revelar';
+}
+
 $('val-true').addEventListener('click', () => {
   if (!state.inValidation) return;
   state.valTruthChoice = true;
@@ -1788,6 +2068,7 @@ socket.on('room_created', ({ code, playerIndex, maxPlayers }) => {
   $('btn-join').disabled = false;
   history.replaceState(null, '', '/jogar/sala-' + code);
   saveRoomToStorage(code, playerIndex, state.user ? state.user.displayName : '');
+  updateWelcomeTitle(code);
   showToast('Sala criada: ' + code, 'success');
 });
 
@@ -1799,6 +2080,7 @@ socket.on('room_joined', ({ code, playerIndex }) => {
   $('lobby-room-info').style.display = 'block';
   $('preview-checkbox-container').style.display = 'none';
   history.replaceState(null, '', '/jogar/sala-' + code);
+  updateWelcomeTitle(code);
   saveRoomToStorage(code, playerIndex, state.user ? state.user.displayName : '');
   showToast('Voce entrou na sala ' + code, 'success');
 });
@@ -1812,7 +2094,7 @@ socket.on('lobby_update', ({ players, maxPlayers, code }) => {
   $('players-connected').textContent = players.filter(p => p !== null).length;
   renderLobbyPlayers(players);
   const connectedCount = players.filter(p => p !== null).length;
-  $('btn-start').disabled = !state.isHost || connectedCount < 2;
+  $('btn-start').disabled = !state.isHost;
 });
 
 socket.on('game_start', ({ players, currentTurn, scores, maxPlayers }) => {
@@ -1821,9 +2103,14 @@ socket.on('game_start', ({ players, currentTurn, scores, maxPlayers }) => {
   state.scores = scores;
   state.maxPlayers = maxPlayers;
   state.active = true;
+  state.lockBoard = false;
+  state.peekMode = false;
+  $('btn-peek-cards').classList.remove('active');
+  $('btn-peek-cards').querySelector('span').textContent = 'Revelar';
   state.board = new Array(96).fill('hidden');
   state.cards = new Array(96).fill(null);
   state.flipped = [];
+  state.collectedFlags = {};
   state.turnTimeLeft = 30;
   buildBoard();
   resetFieldMarkings();
@@ -1837,15 +2124,18 @@ socket.on('card_flipped', ({ cardIndex, flagCode, countryName }) => {
   state.pendingClick = null;
   if (!state.flipped.includes(cardIndex)) state.flipped.push(cardIndex);
   state.cards[cardIndex] = { flagCode, countryName };
-  const cardEl = document.querySelector('[data-index="' + cardIndex + '"]');
+  var cardEl = document.querySelector('[data-index="' + cardIndex + '"]');
   if (cardEl) {
     cardEl.classList.add('flipped', 'disabled');
-    const front = cardEl.querySelector('.mem-card-front');
+    var front = cardEl.querySelector('.mem-card-front');
     if (front && !front.querySelector('img')) {
       front.innerHTML =
         '<img src="' + flagUrl(flagCode) + '" alt="Bandeira de ' + escapeHtml(countryName) + '" class="mem-card-flag" loading="lazy">' +
         '<span class="mem-card-name">' + escapeHtml(countryName) + '</span>';
     }
+  }
+  if (state.flipped.length >= 2) {
+    state.lockBoard = true;
   }
 });
 
@@ -1873,6 +2163,7 @@ socket.on('validation_result', ({ truthCorrect, success }) => {
 
 socket.on('cards_to_deck', ({ indices, playerIndex, deckCount, flagCode, countryName }) => {
   state.inValidation = false;
+  state.lockBoard = false;
   closeValidation();
   indices.forEach(i => {
     state.board[i] = 'collected';
@@ -1885,13 +2176,9 @@ socket.on('cards_to_deck', ({ indices, playerIndex, deckCount, flagCode, country
   });
   state.flipped = [];
   state.scores[playerIndex] = deckCount;
-  const grid = $('deck-mini-' + playerIndex);
-  if (grid && grid.children.length % 2 === 0) {
-    const img = document.createElement('img');
-    img.src = flagUrl(flagCode);
-    img.alt = countryName;
-    grid.appendChild(img);
-  }
+  if (!state.collectedFlags) state.collectedFlags = {};
+  if (!state.collectedFlags[playerIndex]) state.collectedFlags[playerIndex] = [];
+  state.collectedFlags[playerIndex].push({ flagCode: flagCode, countryName: countryName });
   updateFieldMarkings();
   renderScoreboard();
   celebrate(flagCode, countryName);
@@ -1928,13 +2215,48 @@ socket.on('cards_returned', ({ indices, reason }) => {
     closeValidation(reason === 'timeout');
   }
   state.flipped = [];
+  // If in peek mode, re-reveal returned cards after animation
+  if (state.peekMode) {
+    var delay = reason === 'wrong_pair' ? 1500 : 100;
+    setTimeout(function() {
+      indices.forEach(function(i) {
+        if (state.board[i] === 'hidden' && state.cards[i]) {
+          var el = document.querySelector('[data-index="' + i + '"]');
+          if (el && !el.classList.contains('flipped')) {
+            el.classList.add('flipped', 'peek-revealed');
+            var front = el.querySelector('.mem-card-front');
+            if (front && !front.querySelector('img')) {
+              front.innerHTML =
+                '<img src="' + flagUrl(state.cards[i].flagCode) + '" alt="' + escapeHtml(state.cards[i].countryName) + '" class="mem-card-flag" loading="lazy">' +
+                '<span class="mem-card-name">' + escapeHtml(state.cards[i].countryName) + '</span>';
+            }
+          }
+        }
+      });
+    }, delay);
+  }
 });
 
-socket.on('turn_changed', ({ currentTurn }) => {
+socket.on('turn_changed', ({ currentTurn, reason }) => {
   state.currentTurn = currentTurn;
   state.inValidation = false;
+  state.lockBoard = false;
+  state.flipped = [];
   renderScoreboard();
   renderTurnIndicator();
+  if (state.players[currentTurn]) {
+    var playerName = state.players[currentTurn].name;
+    var flagCode = state.players[currentTurn].flagCode;
+    var isMe = currentTurn === state.myIndex;
+    var popupHtml =
+      '<div class="popup-turn-flag">' +
+        '<img src="' + flagUrl(flagCode) + '" alt="" style="width:54px;height:36px;border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,0.25);">' +
+      '</div>' +
+      '<div class="popup-turn-msg">' +
+        (isMe ? '<strong>Sua vez!</strong>' : 'Vez de <strong>' + escapeHtml(playerName) + '</strong>') +
+      '</div>';
+    showCenterPopup(popupHtml, 2000);
+  }
 });
 
 socket.on('turn_timer', ({ remaining }) => {
@@ -2055,6 +2377,10 @@ function hideCenterPopup() {
 socket.on('game_over', ({ winner, winnerName, winnerFlagCode, deckCounts, scores, quizFirstTry }) => {
   closeValidation();
   state.active = false;
+  state.peekMode = false;
+  $('btn-peek-cards').classList.remove('active');
+  $('btn-peek-cards').querySelector('span').textContent = 'Revelar';
+  document.querySelector('.board-container').classList.remove('peek-mode');
   showResult(winner, winnerName, winnerFlagCode, deckCounts, scores, quizFirstTry);
 });
 
@@ -2163,7 +2489,7 @@ function buildBoard() {
   const board = $('board');
   board.innerHTML = '';
   const trophySvg = '<svg class="mem-card-back-trophies" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)"><path d="M7 4V2h10v2h4v4c0 2.21-1.79 4-4 4h-.55C15.74 13.74 14.5 15 13 15.93V18h3v2H8v-2h3v-2.07C9.5 15 8.26 13.74 7.55 12H7c-2.21 0-4-1.79-4-4V4h4zM5 6v2c0 1.1.9 2 2 2V6H5zm12 4c1.1 0 2-.9 2-2V6h-2v4z"/></svg>';
-  const watermark = '<span class="mem-card-back-watermark">Jogo da Memoria da Adriele</span>';
+  const watermark = '<span class="mem-card-back-watermark">Jogo da Memoria Copa do Mundo 2026</span>';
   for (let i = 0; i < 96; i++) {
     const card = document.createElement('div');
     card.className = 'mem-card';
@@ -2183,6 +2509,7 @@ function onCardClick(index) {
   if (state.currentTurn !== state.myIndex) return;
   if (state.board[index] !== 'hidden') return;
   if (state.flipped.length >= 2) return;
+  if (state.lockBoard) return;
   if (state.inValidation) return;
   if (state.pendingClick === index) return;
   state.pendingClick = index;
@@ -2249,19 +2576,20 @@ function rebuildDecksFromState() {
     const grid = $('deck-mini-' + i);
     if (!grid) return;
     grid.innerHTML = '';
-    const count = state.scores[i] || 0;
-    if (p && p.flagCode) {
-      for (let k = 0; k < count; k++) {
+    if (state.collectedFlags && state.collectedFlags[i]) {
+      state.collectedFlags[i].forEach(item => {
         const img = document.createElement('img');
-        img.src = flagUrl(p.flagCode);
-        img.alt = '';
+        img.src = flagUrl(item.flagCode);
+        img.alt = item.countryName || '';
+        img.title = item.countryName || '';
         grid.appendChild(img);
-      }
+      });
     }
   });
 }
 
 function rebuildDecksAfterReconnect(collectedFlags) {
+  state.collectedFlags = {};
   const grouped = {};
   state.players.forEach((_, i) => { grouped[i] = []; });
   collectedFlags.forEach(f => {
@@ -2269,19 +2597,13 @@ function rebuildDecksAfterReconnect(collectedFlags) {
     grouped[f.playerIndex].push(f);
   });
   Object.keys(grouped).forEach(pi => {
-    const grid = $('deck-mini-' + pi);
-    if (!grid) return;
-    grid.innerHTML = '';
     const list = grouped[pi];
-    list.forEach(item => {
-      if (item && item.flagCode) {
-        const img = document.createElement('img');
-        img.src = flagUrl(item.flagCode);
-        img.alt = item.countryName || '';
-        grid.appendChild(img);
-      }
-    });
+    state.collectedFlags[pi] = list.map(item => ({
+      flagCode: item.flagCode,
+      countryName: item.countryName
+    }));
   });
+  renderScoreboard();
 }
 
 function renderTurnIndicator() {
@@ -2690,6 +3012,16 @@ function resetLobby() {
   clearRoomFromStorage();
   history.replaceState(null, '', '/jogar');
   showScreen('screen-lobby');
+}
+
+function updateWelcomeTitle(code) {
+  var el = document.getElementById('welcome-title');
+  if (el) {
+    el.textContent = 'Bem-vindo a partida ' + code + ' - Boa sorte!';
+    el.classList.remove('welcome-title');
+    void el.offsetWidth;
+    el.classList.add('welcome-title');
+  }
 }
 
 function saveRoomToStorage(code, playerIndex, playerName) {

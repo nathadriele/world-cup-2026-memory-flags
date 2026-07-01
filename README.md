@@ -1,13 +1,13 @@
-## Memory Cup 2026
+# Memory Cup 2026
 
-Jogo da memória multiplayer com as 48 seleções da Copa do Mundo 2026, com quiz de validação de pares e comemoração de vitória com taça.
+Jogo da memória multiplayer com as 48 seleções da Copa do Mundo 2026, com quiz de validação de pares e comemoração de vitória com taça animada.
 
 **Stack:** Node.js 18+, Express 4.x, Socket.io 4.x, HTML5/CSS3/JS vanilla
 
 ## Como testar localmente
 
 ```bash
-git clone o projeto 
+git clone
 cd memory-flags-2026
 npm install
 node server.js
@@ -57,6 +57,6 @@ Ou use o `render.yaml` fornecido com Blueprint.
 - [ ] Fechar uma aba e reabrir em menos de 60s restaura a partida
 - [ ] Responsividade testada em viewport mobile
 
-## Desenvolvido para diversão 
+## Desenvolvido por
 
 Nathalia Adriele - 2026

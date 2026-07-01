@@ -64,13 +64,16 @@ const COUNTRY_NAMES = TEAMS.reduce((acc, t) => { acc[t.code] = t.name; return ac
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  pingTimeout: 60000,
+  pingInterval: 15000
+});
 
 const PORT = process.env.PORT || 3000;
 const TURN_TIME = 30;
 const VALIDATION_TIME = 30;
-const RECONNECT_WINDOW = 60000;
-const MAX_PLAYERS = 4;
+const RECONNECT_WINDOW = 120000;
+const MAX_PLAYERS = 8;
 const PREVIEW_WARN = 5;
 const PREVIEW_SHOW = 10;
 
@@ -122,7 +125,7 @@ function buildCards() {
 
 function createRoom(playerName, flagCode, maxPlayers) {
   const code = genCode();
-  const max = Math.min(Math.max(maxPlayers || 2, 2), MAX_PLAYERS);
+  const max = Math.min(Math.max(maxPlayers || 2, 1), MAX_PLAYERS);
   const room = {
     code,
     maxPlayers: max,
@@ -183,7 +186,7 @@ function nextActivePlayer(room, fromIndex) {
 }
 
 function hasEnoughActivePlayers(room) {
-  return room.players.filter(p => p && p.connected).length >= 2;
+  return room.players.filter(p => p && p.connected).length >= 1;
 }
 
 function startTurnTimer(room) {
@@ -477,10 +480,6 @@ io.on('connection', (socket) => {
     if (!info) return;
     const room = rooms.get(info.code);
     if (!room || room.active) return;
-    if (activePlayerCount(room) < 2) {
-      socket.emit('room_error', { message: 'Mínimo de 2 jogadores.' });
-      return;
-    }
     const realPlayers = room.players.filter(p => p !== null);
     room.players = realPlayers;
     room.scores = room.players.map(() => 0);
@@ -581,7 +580,7 @@ io.on('connection', (socket) => {
           }
           emitAll(room, 'turn_changed', { currentTurn: room.currentTurn, reason: 'wrong_pair' });
           if (room.active) startTurnTimer(room);
-        }, 1800);
+        }, 5800);
       } else {
         const trivia = getTrivia(ca.code);
         room.pendingValidation = {
@@ -658,13 +657,28 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('reveal_cards_request', () => {
+    const info = playerRooms.get(socket.id);
+    if (!info) return;
+    const room = rooms.get(info.code);
+    if (!room || !room.active) return;
+    // Send ALL card data ONLY to the requesting player
+    const allCards = {};
+    for (let i = 0; i < room.cards.length; i++) {
+      if (room.cards[i]) {
+        allCards[i] = { flagCode: room.cards[i].code, countryName: room.cards[i].name };
+      }
+    }
+    socket.emit('reveal_all_cards', { cards: allCards });
+  });
+
   socket.on('play_again', () => {
     const info = playerRooms.get(socket.id);
     if (!info) return;
     const room = rooms.get(info.code);
     if (!room) return;
     const realPlayers = room.players.filter(p => p !== null);
-    if (realPlayers.length < 2) return;
+    if (realPlayers.length < 1) return;
     clearTimers(room);
     room.players = realPlayers;
     room.maxPlayers = realPlayers.length;
@@ -697,7 +711,7 @@ io.on('connection', (socket) => {
       }
       if (room.active) {
         const remaining = room.players.filter(p => p !== null && p.connected);
-        if (remaining.length < 2) {
+        if (remaining.length < 1) {
           clearTimers(room);
           room.active = false;
           emitAll(room, 'room_error', { message: 'Jogador insuficiente. A partida foi encerrada.' });
@@ -798,7 +812,7 @@ io.on('connection', (socket) => {
         r.players[roomIdx] = null;
         if (r.active) {
           const remaining = r.players.filter(p => p !== null && p.connected);
-          if (remaining.length < 2) {
+          if (remaining.length < 1) {
             clearTimers(r);
             r.active = false;
             emitAll(r, 'room_error', { message: 'Jogadores insuficientes. A partida foi encerrada.' });

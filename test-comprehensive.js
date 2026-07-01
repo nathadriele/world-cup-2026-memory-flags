@@ -286,8 +286,8 @@ async function main() {
 
     // Wait for either pair_found_pending_validation or cards_returned
     const event = await Promise.race([
-      waitEvent(turnPlayer, 'pair_found_pending_validation', 3000).then(d => ({ type: 'pair', data: d })),
-      waitEvent(turnPlayer, 'cards_returned', 3000).then(d => ({ type: 'wrong', data: d }))
+      waitEvent(turnPlayer, 'pair_found_pending_validation', 10000).then(d => ({ type: 'pair', data: d })),
+      waitEvent(turnPlayer, 'cards_returned', 10000).then(d => ({ type: 'wrong', data: d }))
     ]).catch(() => ({ type: 'timeout' }));
 
     assert(event.type !== 'timeout', 'Expected some response to second flip (pair or cards_returned)');
