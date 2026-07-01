@@ -7,7 +7,7 @@ Jogo da memória multiplayer com as 48 seleções da Copa do Mundo 2026, com qui
 ## Como testar localmente
 
 ```bash
-git clone
+git clone <repo>
 cd memory-flags-2026
 npm install
 node server.js
