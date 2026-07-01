@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranking - Memory Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.ranking-content { max-width: 800px; margin: 0 auto; }
+
+.ranking-hero {
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  margin-bottom: 24px;
+  color: white;
+}
+.ranking-hero h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ranking-hero p {
+  opacity: 0.85;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.ranking-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.rank-stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.rank-stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-1);
+}
+.rank-stat-label {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.podium {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: end;
+}
+.podium-item {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 20px 14px;
+  text-align: center;
+  position: relative;
+  animation: fadeInUp 0.4s ease;
+}
+.podium-item.first { order: 2; padding-top: 28px; }
+.podium-item.second { order: 1; padding-top: 18px; opacity: 0.95; }
+.podium-item.third { order: 3; padding-top: 14px; opacity: 0.9; }
+.podium-medal {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin: 0 auto 10px;
+  color: white;
+}
+.podium-medal.gold { background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 4px 16px rgba(255,215,0,0.3); }
+.podium-medal.silver { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); }
+.podium-medal.bronze { background: linear-gradient(135deg, #CD7F32, #B87333); }
+.podium-flag { width: 40px; height: 27px; object-fit: cover; border-radius: 3px; margin-bottom: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+.podium-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.92rem; color: var(--text-primary); margin-bottom: 2px; }
+.podium-wins { font-size: 0.82rem; color: var(--text-secondary); font-weight: 700; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+.rank-list {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  animation: fadeInUp 0.3s ease;
+}
+.rank-row:last-child { border-bottom: none; }
+.rank-row:hover { background: var(--bg-surface); }
+.rank-position {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  background: var(--bg-surface);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.rank-row.top-1 .rank-position { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; }
+.rank-row.top-2 .rank-position { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: white; }
+.rank-row.top-3 .rank-position { background: linear-gradient(135deg, #CD7F32, #B87333); color: white; }
+.rank-flag { width: 32px; height: 22px; object-fit: cover; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); flex-shrink: 0; }
+.rank-info { flex: 1; min-width: 0; }
+.rank-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+.rank-meta { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
+.rank-wins-badge {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--accent-1);
+  flex-shrink: 0;
+}
+.rank-wins-badge small { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; display: block; }
+
+.rank-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+.rank-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.rank-empty p { font-size: 0.92rem; font-weight: 600; }
+
+.refresh-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.refresh-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-1);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.refresh-btn:hover { background: var(--accent-1); color: white; border-color: var(--accent-1); }
+.last-updated { font-size: 0.76rem; color: var(--text-muted); font-weight: 600; }
+
+@media (max-width: 600px) {
+  .podium { grid-template-columns: 1fr; }
+  .podium-item.first { order: 1; }
+  .podium-item.second { order: 2; }
+  .podium-item.third { order: 3; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-mount"></div>
+  <main class="main-content">
+    <div class="main-header">
+      <div class="menu-hamburger" onclick="toggleSidebar()">&#9776;</div>
+      <h1 class="page-title">Ranking dos Ganhadores</h1>
+    </div>
+
+    <div class="ranking-content">
+      <div class="ranking-hero">
+        <h1>Ranking dos Ganhadores</h1>
+        <p>Classificacao dos melhores jogadores do Memory Cup 2026. O ranking e atualizado automaticamente apos cada partida concluida.</p>
+      </div>
+
+      <div class="ranking-stats" id="stats-row"></div>
+
+      <div id="podium-container"></div>
+
+      <div class="refresh-bar">
+        <span class="last-updated" id="last-updated"></span>
+        <button class="refresh-btn" onclick="loadRanking()">Atualizar</button>
+      </div>
+
+      <div class="rank-list" id="rank-list"></div>
+    </div>
+  </main>
+</div>
+
+<script src="/shared.js"></script>
+<script>
+async function loadRanking() {
+  try {
+    var res = await fetch('/api/ranking');
+    if (!res.ok) { showToast('Erro ao carregar ranking.', 'error'); return; }
+    var data = await res.json();
+    renderStats(data.ranking, data.totalMatches);
+    renderPodium(data.ranking);
+    renderList(data.ranking);
+    var now = new Date();
+    document.getElementById('last-updated').textContent = 'Atualizado as ' + now.toLocaleTimeString('pt-BR');
+  } catch (e) {
+    showToast('Erro de conexao.', 'error');
+  }
+}
+
+function renderStats(ranking, totalMatches) {
+  var totalWins = ranking.reduce(function(s, r) { return s + r.wins; }, 0);
+  var totalQuizzes = ranking.reduce(function(s, r) { return s + (r.bestQuizzes || 0); }, 0);
+  document.getElementById('stats-row').innerHTML =
+    '<div class="rank-stat-card"><div class="rank-stat-value">' + totalMatches + '</div><div class="rank-stat-label">Partidas</div></div>' +
+    '<div class="rank-stat-card"><div class="rank-stat-value">' + ranking.length + '</div><div class="rank-stat-label">Vencedores</div></div>' +
+    '<div class="rank-stat-card"><div class="rank-stat-value">' + totalWins + '</div><div class="rank-stat-label">Vitorias</div></div>' +
+    '<div class="rank-stat-card"><div class="rank-stat-value">' + totalQuizzes + '</div><div class="rank-stat-label">Acertos</div></div>';
+}
+
+function renderPodium(ranking) {
+  var container = document.getElementById('podium-container');
+  if (ranking.length < 3) { container.innerHTML = ''; return; }
+
+  var medals = ['gold', 'silver', 'bronze'];
+  var labels = ['1st', '2nd', '3rd'];
+  var orders = ['first', 'second', 'third'];
+
+  container.innerHTML = '<div class="podium">' + ranking.slice(0, 3).map(function(r, i) {
+    return '<div class="podium-item ' + orders[i] + '">' +
+      '<div class="podium-medal ' + medals[i] + '">' + (i + 1) + '</div>' +
+      '<img class="podium-flag" src="' + flagUrl(r.flagCode) + '" alt="">' +
+      '<div class="podium-name">' + r.displayName + '</div>' +
+      '<div class="podium-wins">' + r.wins + ' vitoria' + (r.wins !== 1 ? 's' : '') + '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function renderList(ranking) {
+  var list = document.getElementById('rank-list');
+  if (ranking.length === 0) {
+    list.innerHTML = '<div class="rank-empty"><div class="rank-empty-icon">\u2654</div><p>Nenhuma partida concluida ainda. Jogue para aparecer no ranking!</p></div>';
+    return;
+  }
+
+  list.innerHTML = ranking.map(function(r, i) {
+    var topClass = i < 3 ? ' top-' + (i + 1) : '';
+    return '<div class="rank-row' + topClass + '">' +
+      '<div class="rank-position">' + (i + 1) + '</div>' +
+      '<img class="rank-flag" src="' + flagUrl(r.flagCode) + '" alt="">' +
+      '<div class="rank-info">' +
+        '<div class="rank-name">' + r.displayName + '</div>' +
+        '<div class="rank-meta">' + (r.bestQuizzes || 0) + ' acertos em quizzes</div>' +
+      '</div>' +
+      '<div class="rank-wins-badge">' + r.wins + '<small>vitorias</small></div>' +
+    '</div>';
+  }).join('');
+}
+
+(async function() {
+  var user = await loadCurrentUser();
+  if (!user) { window.location.href = '/'; return; }
+  document.getElementById('sidebar-mount').appendChild(buildSidebar('ranking', user));
+  loadRanking();
+  setInterval(loadRanking, 30000);
+})();
+</script>
+</body>
+</html>

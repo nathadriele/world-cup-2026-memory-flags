@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administração - Memory Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.admin-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.stat-row-admin { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 8px; }
+.stat-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-sm); text-align: center; }
+.stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--accent-1); }
+.stat-label { font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.user-table { width: 100%; border-collapse: collapse; }
+.user-table th { text-align: left; padding: 10px 12px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+.user-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+.user-table tr:hover { background: var(--bg-surface); }
+.user-flag { width: 28px; height: 19px; object-fit: cover; border-radius: 2px; vertical-align: middle; }
+.role-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; }
+.role-badge.admin { background: rgba(114,9,183,0.1); color: var(--accent-2); }
+.role-badge.player { background: rgba(67,97,238,0.1); color: var(--accent-1); }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.status-dot.online { background: var(--accent-success); }
+.status-dot.offline { background: var(--text-muted); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(27,37,89,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.modal-overlay.show { display: flex; }
+.modal-card { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 32px; width: 100%; max-width: 440px; animation: fadeInUp 0.3s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+.modal-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 18px; color: var(--text-primary); }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions .btn { flex: 1; }
+.section-subtitle { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary); }
+.admin-flag-select { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 5px; max-height: 120px; overflow-y: auto; padding: 8px; background: var(--bg-surface); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.admin-flag-option { width: 100%; height: 24px; border-radius: 3px; cursor: pointer; border: 2px solid transparent; object-fit: cover; }
+.admin-flag-option.selected { border-color: var(--accent-1); }
+.btn-icon { padding: 6px 10px; font-size: 0.8rem; margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-mount"></div>
+  <main class="main-content">
+    <div class="main-header">
+      <div class="menu-hamburger" onclick="toggleSidebar()">&#9776;</div>
+      <h1 class="page-title">Administração</h1>
+      <div class="online-badge"><span class="online-dot"></span><span id="online-count">0</span> online</div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="stat-row-admin" id="stats-row"></div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+          <h2 class="section-subtitle">Usuários Cadastrados</h2>
+          <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Novo Usuário</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuário</th>
+                <th>Nome</th>
+                <th>Bandeira</th>
+                <th>Papel</th>
+                <th>Status</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal-card">
+    <h2 class="modal-title" id="modal-title">Novo Usuário</h2>
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label for="modal-username">Usuário</label>
+      <input type="text" id="modal-username" class="form-input">
+    </div>
+    <div class="form-group">
+      <label for="modal-password">Senha <span id="password-hint" style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">(deixe vazio para manter)</span></label>
+      <input type="password" id="modal-password" class="form-input">
+    </div>
+    <div class="form-group">
+      <label for="modal-display">Nome de exibição</label>
+      <input type="text" id="modal-display" class="form-input" maxlength="15">
+    </div>
+    <div class="form-group">
+      <label for="modal-flag">Bandeira</label>
+      <div class="admin-flag-select" id="modal-flag"></div>
+    </div>
+    <div class="form-group">
+      <label for="modal-role">Papel</label>
+      <select id="modal-role" class="form-input">
+        <option value="player">Jogador</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUser()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/shared.js"></script>
+<script>
+var selectedFlag = 'br';
+var editMode = false;
+
+function buildFlagSelectModal() {
+  var container = document.getElementById('modal-flag');
+  container.innerHTML = TEAMS.map(function(t) {
+    return '<img class="admin-flag-option' + (t.code === selectedFlag ? ' selected' : '') + '" src="' + flagUrl(t.code) + '" alt="' + t.name + '" title="' + t.name + '" onclick="selectModalFlag(\'' + t.code + '\')">';
+  }).join('');
+}
+
+function selectModalFlag(code) {
+  selectedFlag = code;
+  document.querySelectorAll('.admin-flag-option').forEach(function(el) { el.classList.remove('selected'); });
+  event.target.classList.add('selected');
+}
+
+async function loadUsers() {
+  try {
+    var res = await fetch('/api/admin/users');
+    if (!res.ok) { showToast('Erro ao carregar usuários.', 'error'); return; }
+    var data = await res.json();
+    renderStats(data.users);
+    renderUsers(data.users);
+  } catch (e) {
+    showToast('Erro de conexão.', 'error');
+  }
+}
+
+function renderStats(users) {
+  var total = users.length;
+  var admins = users.filter(function(u) { return u.role === 'admin'; }).length;
+  var online = users.filter(function(u) {
+    if (!u.last_seen) return false;
+    return new Date(u.last_seen) > new Date(Date.now() - 5 * 60 * 1000);
+  }).length;
+  document.getElementById('stats-row').innerHTML =
+    '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">Total</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + admins + '</div><div class="stat-label">Administradores</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + online + '</div><div class="stat-label">Online</div></div>';
+}
+
+function renderUsers(users) {
+  var tbody = document.getElementById('users-tbody');
+  if (users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:30px;">Nenhum usuário cadastrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(function(u) {
+    var isOnline = u.last_seen && new Date(u.last_seen) > new Date(Date.now() - 5 * 60 * 1000);
+    var created = new Date(u.created_at).toLocaleDateString('pt-BR');
+    return '<tr>' +
+      '<td>' + u.id + '</td>' +
+      '<td>' + u.username + '</td>' +
+      '<td>' + u.display_name + '</td>' +
+      '<td><img class="user-flag" src="' + flagUrl(u.flag_code) + '" alt=""></td>' +
+      '<td><span class="role-badge ' + u.role + '">' + (u.role === 'admin' ? 'Admin' : 'Jogador') + '</span></td>' +
+      '<td><span class="status-dot ' + (isOnline ? 'online' : 'offline') + '"></span>' + (isOnline ? 'Online' : 'Offline') + '</td>' +
+      '<td>' + created + '</td>' +
+      '<td>' +
+        '<button class="btn btn-secondary btn-icon" onclick="openEditModal(' + u.id + ', \'' + u.username.replace(/'/g, "\\'") + '\', \'' + u.display_name.replace(/'/g, "\\'") + '\', \'' + u.flag_code + '\', \'' + u.role + '\')">Editar</button>' +
+        '<button class="btn btn-danger btn-icon" onclick="deleteUser(' + u.id + ', \'' + u.username.replace(/'/g, "\\'") + '\')">Excluir</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function openCreateModal() {
+  editMode = false;
+  document.getElementById('modal-title').textContent = 'Novo Usuário';
+  document.getElementById('edit-id').value = '';
+  document.getElementById('modal-username').value = '';
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-password').required = true;
+  document.getElementById('password-hint').textContent = '(mínimo 6 caracteres)';
+  document.getElementById('modal-display').value = '';
+  document.getElementById('modal-role').value = 'player';
+  selectedFlag = 'br';
+  buildFlagSelectModal();
+  document.getElementById('modal').classList.add('show');
+}
+
+function openEditModal(id, username, displayName, flagCode, role) {
+  editMode = true;
+  document.getElementById('modal-title').textContent = 'Editar Usuário';
+  document.getElementById('edit-id').value = id;
+  document.getElementById('modal-username').value = username;
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-password').required = false;
+  document.getElementById('password-hint').textContent = '(deixe vazio para manter)';
+  document.getElementById('modal-display').value = displayName;
+  document.getElementById('modal-role').value = role;
+  selectedFlag = flagCode;
+  buildFlagSelectModal();
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+async function saveUser() {
+  var id = document.getElementById('edit-id').value;
+  var username = document.getElementById('modal-username').value.trim();
+  var password = document.getElementById('modal-password').value;
+  var displayName = document.getElementById('modal-display').value.trim();
+  var role = document.getElementById('modal-role').value;
+
+  if (!username || !displayName) { showToast('Preencha todos os campos.', 'warning'); return; }
+
+  try {
+    var res, data;
+    if (editMode) {
+      res = await fetch('/api/admin/users/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: displayName, flagCode: selectedFlag, role: role, password: password || null })
+      });
+    } else {
+      if (!password || password.length < 6) { showToast('A senha deve ter no mínimo 6 caracteres.', 'warning'); return; }
+      res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, password: password, displayName: displayName, flagCode: selectedFlag, role: role })
+      });
+    }
+    data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Erro ao salvar.', 'error'); return; }
+    showToast(editMode ? 'Usuário atualizado!' : 'Usuário criado!', 'success');
+    closeModal();
+    loadUsers();
+  } catch (e) {
+    showToast('Erro de conexão.', 'error');
+  }
+}
+
+async function deleteUser(id, username) {
+  if (!confirm('Confirma excluir o usuário "' + username + '"?')) return;
+  try {
+    var res = await fetch('/api/admin/users/' + id, { method: 'DELETE' });
+    var data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Erro ao excluir.', 'error'); return; }
+    showToast('Usuário excluído.', 'success');
+    loadUsers();
+  } catch (e) {
+    showToast('Erro de conexão.', 'error');
+  }
+}
+
+var socket = io();
+socket.on('online_users', function(data) {
+  var el = document.getElementById('online-count');
+  if (el) el.textContent = data.count;
+});
+
+(async function() {
+  var user = await loadCurrentUser();
+  if (!user) { window.location.href = '/'; return; }
+  if (user.role !== 'admin') { window.location.href = '/jogar'; return; }
+  document.getElementById('sidebar-mount').appendChild(buildSidebar('admin', user));
+  buildFlagSelectModal();
+  loadUsers();
+})();
+</script>
+</body>
+</html>

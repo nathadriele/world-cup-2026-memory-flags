@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar - Memory Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+body { display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+.login-wrapper {
+  width: 100%;
+  max-width: 440px;
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 6px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+}
+
+.mode-toggle {
+  display: flex;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 24px;
+}
+
+.mode-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-tab.active {
+  background: var(--bg-card);
+  color: var(--accent-1);
+  box-shadow: var(--shadow-sm);
+}
+
+.flag-select {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 6px;
+  max-height: 140px;
+  overflow-y: auto;
+  padding: 8px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.flag-option {
+  width: 100%;
+  height: 28px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  object-fit: cover;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.flag-option:hover { transform: scale(1.1); }
+.flag-option.selected { border-color: var(--accent-1); box-shadow: 0 0 0 2px rgba(67,97,238,0.2); }
+
+.btn-row { display: flex; gap: 10px; }
+.btn-row .btn { flex: 1; }
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper .form-input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  padding: 2px 4px;
+  line-height: 1;
+  user-select: none;
+}
+
+.password-toggle:hover {
+  color: var(--accent-1);
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <h1 class="login-logo">MEMORY CUP 2026</h1>
+  <p class="login-subtitle">Bandeiras da Copa do Mundo 2026</p>
+
+  <div class="login-card">
+    <div class="mode-toggle">
+      <div class="mode-tab active" id="tab-login" onclick="switchMode('login')">Entrar</div>
+      <div class="mode-tab" id="tab-register" onclick="switchMode('register')">Cadastrar</div>
+    </div>
+
+    <form id="login-form" onsubmit="return doLogin(event)">
+      <div class="form-group">
+        <label for="login-username">Usuário</label>
+        <input type="text" id="login-username" class="form-input" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Senha</label>
+        <div class="password-wrapper">
+          <input type="password" id="login-password" class="form-input" required autocomplete="current-password">
+          <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)">&#128065;</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Entrar</button>
+    </form>
+
+    <form id="register-form" style="display:none;" onsubmit="return doRegister(event)">
+      <div class="form-group">
+        <label for="reg-username">Usuário (mínimo 3 caracteres)</label>
+        <input type="text" id="reg-username" class="form-input" required minlength="3" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Senha (mínimo 6 caracteres)</label>
+        <div class="password-wrapper">
+          <input type="password" id="reg-password" class="form-input" required minlength="6" autocomplete="new-password">
+          <button type="button" class="password-toggle" onclick="togglePassword('reg-password', this)">&#128065;</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="reg-display">Nome de exibição</label>
+        <input type="text" id="reg-display" class="form-input" required maxlength="15" placeholder="Como deseja ser chamado">
+      </div>
+      <div class="form-group">
+        <label>Escolha sua bandeira</label>
+        <div class="flag-select" id="flag-select"></div>
+      </div>
+      <div class="form-group">
+        <label for="reg-admin-code">Codigo de administrador <span style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">(opcional)</span></label>
+        <input type="text" id="reg-admin-code" class="form-input" placeholder="Deixe vazio se nao for admin">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Criar conta</button>
+    </form>
+  </div>
+
+  <p class="login-footer">Desenvolvido por Nathalia Adriele &middot; 2026</p>
+</div>
+
+<script src="/shared.js"></script>
+<script>
+let selectedFlag = 'br';
+
+function switchMode(mode) {
+  const loginForm = document.getElementById('login-form');
+  const regForm = document.getElementById('register-form');
+  const tabLogin = document.getElementById('tab-login');
+  const tabReg = document.getElementById('tab-register');
+  if (mode === 'login') {
+    loginForm.style.display = '';
+    regForm.style.display = 'none';
+    tabLogin.classList.add('active');
+    tabReg.classList.remove('active');
+  } else {
+    loginForm.style.display = 'none';
+    regForm.style.display = '';
+    tabLogin.classList.remove('active');
+    tabReg.classList.add('active');
+  }
+}
+
+function buildFlagSelect() {
+  const container = document.getElementById('flag-select');
+  container.innerHTML = TEAMS.map(t =>
+    '<img class="flag-option' + (t.code === selectedFlag ? ' selected' : '') + '" ' +
+    'src="' + flagUrl(t.code) + '" alt="' + t.name + '" title="' + t.name + '" ' +
+    'onclick="selectFlag(\'' + t.code + '\')">'
+  ).join('');
+}
+
+function selectFlag(code) {
+  selectedFlag = code;
+  document.querySelectorAll('.flag-option').forEach(el => el.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '&#128064;';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '&#128065;';
+  }
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) {
+    showToast('Preencha usuário e senha.', 'warning');
+    return false;
+  }
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.error || 'Erro ao entrar.', 'error');
+      return false;
+    }
+    showToast('Bem-vindo, ' + data.user.displayName + '!', 'success');
+    setTimeout(() => window.location.href = '/jogar', 800);
+  } catch (err) {
+    showToast('Erro de conexão. Tente novamente.', 'error');
+  }
+  return false;
+}
+
+async function doRegister(e) {
+  e.preventDefault();
+  const username = document.getElementById('reg-username').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const displayName = document.getElementById('reg-display').value.trim();
+  const adminCode = document.getElementById('reg-admin-code').value.trim();
+  if (!username || !password || !displayName) {
+    showToast('Preencha todos os campos.', 'warning');
+    return false;
+  }
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, displayName, flagCode: selectedFlag, adminCode: adminCode || undefined })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.error || 'Erro ao cadastrar.', 'error');
+      return false;
+    }
+    showToast('Conta criada! Bem-vindo, ' + data.user.displayName + '!', 'success');
+    setTimeout(() => window.location.href = '/jogar', 800);
+  } catch (err) {
+    showToast('Erro de conexão. Tente novamente.', 'error');
+  }
+  return false;
+}
+
+(async function() {
+  const user = await loadCurrentUser();
+  if (user) {
+    window.location.href = '/jogar';
+    return;
+  }
+  buildFlagSelect();
+})();
+</script>
+</body>
+</html>

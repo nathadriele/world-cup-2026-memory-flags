@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como Jogar - Memory Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.help-content { max-width: 760px; }
+.hero { background: var(--bg-card); border-radius: var(--radius-lg); padding: 32px 28px; box-shadow: var(--shadow-md); text-align: center; margin-bottom: 24px; }
+.hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; margin-bottom: 8px; }
+.hero p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; max-width: 560px; margin: 0 auto; }
+.toc { background: var(--bg-card); border-radius: var(--radius-md); padding: 16px 22px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+.toc-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+.toc-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; }
+.toc-list a { display: inline-block; padding: 5px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px; color: var(--accent-1); text-decoration: none; font-weight: 700; font-size: 0.82rem; transition: all 0.15s; }
+.toc-list a:hover { background: var(--accent-1); color: white; border-color: var(--accent-1); }
+.section { background: var(--bg-card); border-radius: var(--radius-lg); padding: 26px; box-shadow: var(--shadow-sm); margin-bottom: 18px; animation: fadeInUp 0.4s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.section-number { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; border-radius: 50%; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 10px; }
+.section h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; }
+.section p { color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px; }
+.section p strong { color: var(--text-primary); font-weight: 800; }
+.steps { list-style: none; counter-reset: step; margin: 14px 0; }
+.steps li { position: relative; padding: 10px 0 10px 44px; border-bottom: 1px solid var(--border); counter-increment: step; }
+.steps li:last-child { border-bottom: none; }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: var(--bg-surface); border: 2px solid var(--accent-1); color: var(--accent-1); border-radius: 50%; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; }
+.steps li strong { display: block; color: var(--text-primary); font-weight: 800; margin-bottom: 2px; }
+.steps li span { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; }
+.rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 14px 0; }
+.rule-card { background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px; border-left: 4px solid var(--accent-1); }
+.rule-card.success { border-left-color: var(--accent-success); }
+.rule-card.danger { border-left-color: var(--accent-danger); }
+.rule-card.warning { border-left-color: var(--accent-warning); }
+.rule-card.gold { border-left-color: var(--accent-gold); }
+.rule-card-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; }
+.rule-card-text { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; }
+.tip-list { list-style: none; margin: 12px 0; }
+.tip-list li { padding: 9px 14px; background: var(--bg-surface); border-radius: var(--radius-sm); margin-bottom: 7px; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; }
+.tip-list li strong { color: var(--text-primary); }
+.timer-demo { display: flex; align-items: center; gap: 14px; background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px; margin: 14px 0; }
+.timer-demo-circle { width: 52px; height: 52px; border-radius: 50%; background: conic-gradient(var(--accent-1) 0deg, var(--border) 0deg); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; color: var(--accent-1); flex-shrink: 0; }
+.timer-demo-text { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; }
+.timer-demo-text strong { color: var(--text-primary); }
+.faq-item { background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 8px; border: 1px solid var(--border); }
+.faq-item summary { font-weight: 800; font-size: 0.92rem; cursor: pointer; }
+.faq-item p { margin-top: 8px; font-size: 0.86rem; line-height: 1.6; }
+.flags-marquee { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; justify-content: center; }
+.flags-marquee img { width: 34px; height: 23px; object-fit: cover; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-mount"></div>
+  <main class="main-content">
+    <div class="main-header">
+      <div class="menu-hamburger" onclick="toggleSidebar()">&#9776;</div>
+      <h1 class="page-title">Como Jogar</h1>
+    </div>
+
+    <div class="help-content">
+      <div class="hero">
+        <h1>Bem-vindo ao Memory Cup 2026</h1>
+        <p>Um jogo da memória online com bandeiras das seleções da Copa do Mundo 2026. Encontre os pares, responda aos quizzes e vença seus adversários!</p>
+      </div>
+
+      <nav class="toc">
+        <div class="toc-title">Índice Rápido</div>
+        <ul class="toc-list">
+          <li><a href="#objetivo">Objetivo</a></li>
+          <li><a href="#como-jogar">Como Jogar</a></li>
+          <li><a href="#regras">Regras</a></li>
+          <li><a href="#timers">Cronômetros</a></li>
+          <li><a href="#quiz">Quiz</a></li>
+          <li><a href="#vitoria">Vitória</a></li>
+          <li><a href="#dicas">Dicas</a></li>
+          <li><a href="#faq">Perguntas Frequentes</a></li>
+        </ul>
+      </nav>
+
+      <section class="section" id="objetivo">
+        <div class="section-number">1</div>
+        <h2>Objetivo do Jogo</h2>
+        <p>O objetivo é simples: <strong>colete mais pares de bandeiras do que seus adversários</strong>. O tabuleiro possui <strong>96 cartas</strong> (48 pares). Cada jogador tenta encontrar os pares correspondentes virando duas cartas por turno. Ao encontrar um par, um quiz de validação aparece. Acerte o quiz para garantir o par.</p>
+      </section>
+
+      <section class="section" id="como-jogar">
+        <div class="section-number">2</div>
+        <h2>Como Jogar</h2>
+        <ol class="steps">
+          <li><strong>Faça login</strong><span>Crie uma conta ou entre com seu usuário e senha na tela inicial.</span></li>
+          <li><strong>Crie ou entre em uma sala</strong><span>Escolha o número de jogadores (2 a 4) e crie uma sala, ou entre com um código compartilhado.</span></li>
+          <li><strong>Aguarde os jogadores</strong><span>O criador da sala inicia a partida quando houver no mínimo 2 jogadores conectados.</span></li>
+          <li><strong>Vire duas cartas</strong><span>No seu turno, clique em duas cartas. Se forem iguais, um quiz aparece. Se diferentes, as cartas voltam e o turno passa.</span></li>
+          <li><strong>Responda o quiz</strong><span>Escolha Verdadeiro ou Falso antes do tempo acabar. Acertou? O par vai para o seu deck e você joga novamente.</span></li>
+          <li><strong>Continue até o fim</strong><span>O jogo termina quando todos os pares forem coletados. Vence quem tiver mais pares!</span></li>
+        </ol>
+      </section>
+
+      <section class="section" id="regras">
+        <div class="section-number">3</div>
+        <h2>Regras Oficiais</h2>
+        <div class="rule-grid">
+          <div class="rule-card success"><div class="rule-card-title">2 a 4 Jogadores</div><div class="rule-card-text">Cada partida suporta de 2 a 4 jogadores. O mínimo para iniciar é 2.</div></div>
+          <div class="rule-card"><div class="rule-card-title">Turnos Alternados</div><div class="rule-card-text">Os jogadores jogam em rodízio. Errar o par passa a vez ao próximo jogador.</div></div>
+          <div class="rule-card gold"><div class="rule-card-title">Acertou, Joga de Novo</div><div class="rule-card-text">Se encontrar um par e acertar o quiz, mantém o turno e joga novamente.</div></div>
+          <div class="rule-card warning"><div class="rule-card-title">Quiz Obrigatório</div><div class="rule-card-text">Encontrar o par não basta. É preciso acertar o quiz para guardá-lo no deck.</div></div>
+          <div class="rule-card danger"><div class="rule-card-title">Errar o Quiz</div><div class="rule-card-text">Se errar o quiz ou o tempo acabar, o par é descartado e o turno passa.</div></div>
+          <div class="rule-card"><div class="rule-card-title">96 Cartas, 48 Pares</div><div class="rule-card-text">Todas as 48 seleções da Copa 2026 estão representadas no tabuleiro.</div></div>
+        </div>
+      </section>
+
+      <section class="section" id="timers">
+        <div class="section-number">4</div>
+        <h2>Cronômetros e Tempo</h2>
+        <div class="timer-demo">
+          <div class="timer-demo-circle">30s</div>
+          <div class="timer-demo-text"><strong>Turno (30 segundos)</strong><br>Você tem 30 segundos para virar as duas cartas. Se o tempo acabar, o turno passa automaticamente.</div>
+        </div>
+        <div class="timer-demo">
+          <div class="timer-demo-circle">30s</div>
+          <div class="timer-demo-text"><strong>Quiz Validador (30 segundos)</strong><br>Ao encontrar um par, você tem 30 segundos para responder. Se o tempo acabar, conta como erro.</div>
+        </div>
+      </section>
+
+      <section class="section" id="quiz">
+        <div class="section-number">5</div>
+        <h2>Quiz Validador</h2>
+        <p>Quando você encontra um par de bandeiras idênticas, uma janela aparece com:</p>
+        <ul class="tip-list">
+          <li>A <strong>bandeira</strong> e o <strong>nome do país</strong></li>
+          <li>Uma <strong>afirmação</strong> sobre o país (curiosidade, geografia, futebol)</li>
+          <li>Dois botões: <strong>Verdadeiro</strong> ou <strong>Falso</strong></li>
+        </ul>
+        <p>Cada país tem duas afirmações possíveis (uma verdadeira e uma falsa), garantindo equilíbrio e variedade.</p>
+      </section>
+
+      <section class="section" id="vitoria">
+        <div class="section-number">6</div>
+        <h2>Vitória e Empate</h2>
+        <div class="rule-grid">
+          <div class="rule-card gold"><div class="rule-card-title">Como Vencer</div><div class="rule-card-text">O jogador com <strong>mais pares no deck</strong> ao final vence. Uma animação de troféu celebra a conquista.</div></div>
+          <div class="rule-card warning"><div class="rule-card-title">Empate</div><div class="rule-card-text">Se dois ou mais jogadores empatarem em pares, vence quem teve mais acertos de primeira no quiz.</div></div>
+        </div>
+      </section>
+
+      <section class="section" id="dicas">
+        <div class="section-number">7</div>
+        <h2>Dicas Estratégicas</h2>
+        <ul class="tip-list">
+          <li><strong>Memorize as posições:</strong> Mesmo quando erra, preste atenção às cartas reveladas.</li>
+          <li><strong>Observe os adversários:</strong> As cartas que os outros viram também ficam visíveis para você.</li>
+          <li><strong>Responda com calma:</strong> Você tem 30 segundos no quiz. Leia antes de responder.</li>
+          <li><strong>Seja ágil no turno:</strong> Não deixe o cronômetro acabar.</li>
+          <li><strong>Jogadas em série:</strong> Se acertar o par e o quiz, você joga novamente.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="faq">
+        <div class="section-number">8</div>
+        <h2>Perguntas Frequentes</h2>
+        <details class="faq-item" open>
+          <summary>O jogo funciona no celular?</summary>
+          <p>Sim! O Memory Cup 2026 é totalmente responsivo. Funciona em celulares, tablets e computadores.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Preciso instalar alguma coisa?</summary>
+          <p>Não. O jogo roda diretamente no navegador.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Quantos jogadores suporta?</summary>
+          <p>De 2 a 4 jogadores por partida. Várias salas podem existir simultaneamente.</p>
+        </details>
+        <details class="faq-item">
+          <summary>As cartas são embaralhadas a cada partida?</summary>
+          <p>Sim! A cada nova partida, todas as 96 cartas são embaralhadas aleatoriamente.</p>
+        </details>
+        <details class="faq-item">
+          <summary>O que acontece se eu errar o quiz?</summary>
+          <p>O par é descartado e o turno passa ao próximo jogador. Acertar o quiz é obrigatório para coletar o par.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Onde vejo o histórico das partidas?</summary>
+          <p>Na página <a href="/dados" style="color:var(--accent-1); font-weight:700;">Dados das Partidas</a>, com estatísticas detalhadas de cada jogo.</p>
+        </details>
+      </section>
+
+      <section class="section">
+        <h2 style="text-align:center; font-size:1.1rem;">As 48 Seleções da Copa 2026</h2>
+        <div class="flags-marquee" id="flags"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="/shared.js"></script>
+<script>
+document.getElementById('flags').innerHTML = TEAMS.map(function(t) {
+  return '<img src="' + flagUrl(t.code) + '" alt="' + t.name + '" title="' + t.name + '">';
+}).join('');
+
+(async function() {
+  var user = await loadCurrentUser();
+  if (!user) { window.location.href = '/'; return; }
+  document.getElementById('sidebar-mount').appendChild(buildSidebar('ajuda', user));
+})();
+</script>
+</body>
+</html>

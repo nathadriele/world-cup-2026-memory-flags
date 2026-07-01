@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dados das Partidas - Memory Cup 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.summary-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm); text-align: center; }
+.summary-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent-1); line-height: 1; }
+.summary-label { font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.section-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 14px; }
+.match-card { background: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: 14px; overflow: hidden; animation: fadeInUp 0.4s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.match-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: linear-gradient(135deg, rgba(67,97,238,0.06), rgba(114,9,183,0.06)); border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+.match-id { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.88rem; color: var(--text-muted); }
+.match-date { font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
+.match-trophy { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--accent-gold), #FFA500); color: white; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 0.78rem; }
+.match-body { padding: 18px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.player-stat { display: flex; flex-direction: column; gap: 6px; }
+.player-stat-header { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+.player-stat-header img { width: 32px; height: 22px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+.player-stat-header.winner { border-bottom-color: var(--accent-gold); }
+.player-stat-name { font-weight: 800; font-size: 0.92rem; }
+.player-stat-badge { margin-left: auto; font-size: 0.68rem; padding: 2px 8px; border-radius: 8px; background: var(--accent-gold); color: white; font-weight: 700; }
+.stat-row { display: flex; justify-content: space-between; font-size: 0.84rem; }
+.stat-label { color: var(--text-secondary); }
+.stat-value { font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+.stat-bar { width: 100%; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 2px; }
+.stat-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); border-radius: 2px; }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; margin-bottom: 8px; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <div id="sidebar-mount"></div>
+  <main class="main-content">
+    <div class="main-header">
+      <div class="menu-hamburger" onclick="toggleSidebar()">&#9776;</div>
+      <h1 class="page-title">Dados das Partidas</h1>
+      <div class="online-badge"><span class="online-dot"></span><span id="online-count">0</span> online</div>
+    </div>
+    <div class="summary" id="summary"></div>
+    <h2 class="section-title">Histórico de Partidas</h2>
+    <div id="matches-list"></div>
+  </main>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/shared.js"></script>
+<script>
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+function formatDuration(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + 'min ' + s + 's';
+}
+function accuracy(correct, attempts) {
+  if (attempts === 0) return 0;
+  return Math.round((correct / attempts) * 100);
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+async function load() {
+  try {
+    const res = await fetch('/api/matches');
+    const matches = await res.json();
+    renderSummary(matches);
+    renderMatches(matches);
+  } catch (e) {
+    document.getElementById('matches-list').innerHTML = '<div class="empty-state"><h3>Erro ao carregar</h3><p>Não foi possível obter os dados.</p></div>';
+  }
+}
+
+function renderSummary(matches) {
+  const el = document.getElementById('summary');
+  if (matches.length === 0) { el.innerHTML = ''; return; }
+  const totalMatches = matches.length;
+  const totalPairs = matches.reduce((s, m) => s + m.deckCounts.reduce((a, b) => a + b, 0), 0);
+  const totalDuration = matches.reduce((s, m) => s + m.duration, 0);
+  const draws = matches.filter(m => !m.winnerName).length;
+  el.innerHTML =
+    '<div class="summary-card"><div class="summary-value">' + totalMatches + '</div><div class="summary-label">Partidas</div></div>' +
+    '<div class="summary-card"><div class="summary-value">' + totalPairs + '</div><div class="summary-label">Pares Conquistados</div></div>' +
+    '<div class="summary-card"><div class="summary-value">' + formatDuration(totalDuration) + '</div><div class="summary-label">Tempo Total</div></div>' +
+    '<div class="summary-card"><div class="summary-value">' + draws + '</div><div class="summary-label">Empates</div></div>';
+}
+
+function renderMatches(matches) {
+  const el = document.getElementById('matches-list');
+  if (matches.length === 0) {
+    el.innerHTML = '<div class="empty-state"><h3>Nenhuma partida registrada</h3><p>As partidas finalizadas aparecerão aqui com estatísticas detalhadas.</p></div>';
+    return;
+  }
+  el.innerHTML = matches.map(function(m) {
+    var isDraw = !m.winnerName;
+    return '<div class="match-card">' +
+      '<div class="match-header">' +
+        '<div><span class="match-id">#' + m.id + '</span> <span class="match-date">' + formatDate(m.date) + '</span></div>' +
+        '<div style="display:flex; gap:8px; align-items:center;">' +
+          '<span style="font-size:0.78rem; color:var(--text-secondary); font-weight:700;">' + formatDuration(m.duration) + '</span>' +
+          (isDraw ? '<span class="match-trophy">Empate</span>' : '<span class="match-trophy">' + escapeHtml(m.winnerName) + '</span>') +
+        '</div>' +
+      '</div>' +
+      '<div class="match-body">' + m.players.map(function(p, i) { return renderPlayerStats(m, i, isDraw); }).join('') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderPlayerStats(m, i, isDraw) {
+  var p = m.players[i];
+  if (!p) return '';
+  var isWinner = !isDraw && m.winnerName === p.name;
+  var s = m.stats;
+  var pairs = m.deckCounts[i] || 0;
+  var flips = s.totalFlips[i] || 0;
+  var attempted = s.pairsAttempted[i] || 0;
+  var matched = s.pairsMatched[i] || 0;
+  var qAttempts = s.quizAttempts[i] || 0;
+  var qCorrect = s.quizCorrect[i] || 0;
+  var tTimeouts = s.turnTimeouts[i] || 0;
+  var vTimeouts = s.validationTimeouts[i] || 0;
+  var pairRate = attempted > 0 ? Math.round((matched / attempted) * 100) : 0;
+  return '<div class="player-stat">' +
+    '<div class="player-stat-header ' + (isWinner ? 'winner' : '') + '">' +
+      '<img src="' + flagUrl(p.flagCode) + '" alt="">' +
+      '<span class="player-stat-name">' + escapeHtml(p.name) + '</span>' +
+      (isWinner ? '<span class="player-stat-badge">Vencedor</span>' : '') +
+    '</div>' +
+    '<div class="stat-row"><span class="stat-label">Pares no deck</span><span class="stat-value">' + pairs + ' / 48</span></div>' +
+    '<div class="stat-bar"><div class="stat-bar-fill" style="width:' + (pairs/48*100) + '%"></div></div>' +
+    '<div class="stat-row"><span class="stat-label">Cartas viradas</span><span class="stat-value">' + flips + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Tentativas de par</span><span class="stat-value">' + attempted + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Pares acertados</span><span class="stat-value">' + matched + ' (' + pairRate + '%)</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Quiz respondido</span><span class="stat-value">' + qCorrect + '/' + qAttempts + ' (' + accuracy(qCorrect, qAttempts) + '%)</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Acertos de primeira</span><span class="stat-value">' + (m.quizFirstTry[i] || 0) + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Timeouts de turno</span><span class="stat-value" style="color:' + (tTimeouts > 0 ? 'var(--accent-danger)' : 'var(--text-primary)') + '">' + tTimeouts + '</span></div>' +
+    '<div class="stat-row"><span class="stat-label">Timeouts de quiz</span><span class="stat-value" style="color:' + (vTimeouts > 0 ? 'var(--accent-danger)' : 'var(--text-primary)') + '">' + vTimeouts + '</span></div>' +
+  '</div>';
+}
+
+var socket = io();
+socket.on('online_users', function(data) {
+  var el = document.getElementById('online-count');
+  if (el) el.textContent = data.count;
+});
+
+(async function() {
+  var user = await loadCurrentUser();
+  if (!user) { window.location.href = '/'; return; }
+  document.getElementById('sidebar-mount').appendChild(buildSidebar('dados', user));
+  load();
+})();
+</script>
+</body>
+</html>
