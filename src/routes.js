@@ -196,7 +196,9 @@ router.get('/jogar', protectPage, (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'jogar.html'));
 });
 
-router.get('/jogar/sala-:code', protectPage, (req, res) => {
+router.get('/jogar/sala-:code', (req, res) => {
+  // Rota da sala eh publica: o jogador pode acessar pelo link direto
+  // Se nao estiver logado, a pagina de jogo redireciona para login
   res.sendFile(path.join(__dirname, '..', 'public', 'jogar.html'));
 });
 

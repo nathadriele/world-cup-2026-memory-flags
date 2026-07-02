@@ -35,6 +35,17 @@ const suites = [
   { num: '06', name: 'Reveal Cards',    module: './06-reveal-cards.test.js' },
   { num: '07', name: 'Disconnect',      module: './07-disconnect.test.js' },
   { num: '08', name: 'Responsive',      module: './08-responsive.test.js' },
+  { num: '09', name: 'Security',        module: './09-security.test.js' },
+  { num: '10', name: 'Game Logic',      module: './10-game-logic.test.js' },
+  { num: '11', name: 'Admin',           module: './11-admin.test.js' },
+  { num: '12', name: 'Edge Cases',      module: './12-edge-cases.test.js' },
+  { num: '13', name: 'Unit',            module: './13-unit.test.js' },
+  { num: '14', name: 'Integration',     module: './14-integration.test.js' },
+  { num: '15', name: 'API Routes',      module: './15-api-routes.test.js' },
+  { num: '16', name: 'E2E',             module: './16-e2e.test.js' },
+  { num: '17', name: 'Load',            module: './17-load.test.js' },
+  { num: '18', name: 'Exploratory',     module: './18-exploratory.test.js' },
+  { num: '19', name: 'Regression',      module: './19-regression.test.js' },
 ];
 
 // ── Server management ────────────────────────────────────────

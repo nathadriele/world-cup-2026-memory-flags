@@ -264,6 +264,59 @@
   font-style: italic;
 }
 
+/* Ready system styles */
+.lobby-waiting-msg {
+  text-align: center;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 10px;
+  color: #facc15;
+  font-size: 0.85rem;
+  font-weight: 600;
+  animation: pulse-waiting 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-waiting {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+.ready-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.ready-badge.ready {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.ready-badge.not-ready {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--text-muted);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.lobby-player.ready .lobby-player-name {
+  color: #22c55e;
+}
+
+#btn-start.is-ready {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
 .lobby-actions {
   display: flex;
   flex-direction: column;
@@ -1701,7 +1754,10 @@
             <span>Jogadores Conectados (<span id="players-connected">0</span>/<span id="players-max">2</span>)</span>
           </div>
           <div class="players-list" id="lobby-players"></div>
-          <button class="btn btn-success btn-block" id="btn-start" disabled>Iniciar Partida</button>
+          <div id="lobby-waiting-msg" class="lobby-waiting-msg" style="display:none;">
+            Aguardando todos os jogadores iniciarem a partida...
+          </div>
+          <button class="btn btn-success btn-block" id="btn-start">Iniciar Partida</button>
           <button class="btn btn-secondary btn-block" id="btn-leave" style="margin-top:10px;">Sair da Sala</button>
         </div>
       </div>
@@ -1877,7 +1933,8 @@ const state = {
   pendingClick: null,
   lockBoard: false,
   peekMode: false,
-  selectedCount: 2
+  selectedCount: 2,
+  myReady: false
 };
 
 const TIMER_CIRCUMFERENCE = 2 * Math.PI * 24;
@@ -1940,7 +1997,16 @@ $('btn-copy-code').addEventListener('click', () => {
 });
 
 $('btn-start').addEventListener('click', () => {
-  socket.emit('start_game', {});
+  socket.emit('toggle_ready', {});
+  state.myReady = !state.myReady;
+  var btn = $('btn-start');
+  if (state.myReady) {
+    btn.textContent = 'Cancelar Inicio';
+    btn.classList.add('is-ready');
+  } else {
+    btn.textContent = 'Iniciar Partida';
+    btn.classList.remove('is-ready');
+  }
 });
 
 $('btn-leave').addEventListener('click', () => {
@@ -2078,12 +2144,15 @@ socket.on('room_created', ({ code, playerIndex, maxPlayers }) => {
   state.roomCode = code;
   state.myIndex = playerIndex;
   state.isHost = true;
+  state.myReady = false;
   state.maxPlayers = maxPlayers;
   $('display-code').textContent = code;
   $('players-max').textContent = maxPlayers;
   $('lobby-room-info').style.display = 'block';
   $('btn-create').disabled = false;
   $('btn-join').disabled = false;
+  $('btn-start').textContent = 'Iniciar Partida';
+  $('btn-start').classList.remove('is-ready');
   history.replaceState(null, '', '/jogar/sala-' + code);
   saveRoomToStorage(code, playerIndex, state.user ? state.user.displayName : '');
   updateWelcomeTitle(code);
@@ -2111,8 +2180,29 @@ socket.on('lobby_update', ({ players, maxPlayers, code }) => {
   $('players-max').textContent = maxPlayers;
   $('players-connected').textContent = players.filter(p => p !== null).length;
   renderLobbyPlayers(players);
-  const connectedCount = players.filter(p => p !== null).length;
-  $('btn-start').disabled = !state.isHost;
+
+  // Ready/waiting logic
+  var valid = players.filter(p => p !== null);
+  var connected = valid.filter(p => p.connected);
+  var readyCount = connected.filter(p => p.ready).length;
+  var allReady = connected.length > 0 && readyCount === connected.length;
+  var waitingMsg = $('lobby-waiting-msg');
+
+  if (allReady) {
+    waitingMsg.style.display = 'none';
+  } else if (connected.length >= 1) {
+    waitingMsg.style.display = 'block';
+    if (readyCount === 0) {
+      waitingMsg.textContent = 'Aguardando todos os jogadores iniciarem a partida...';
+    } else {
+      var missing = connected.length - readyCount;
+      waitingMsg.textContent = 'Aguardando ' + missing + ' jogador(es) iniciarem a partida...';
+    }
+  } else {
+    waitingMsg.style.display = 'none';
+  }
+
+  $('btn-start').disabled = false;
 });
 
 socket.on('game_start', ({ players, currentTurn, scores, maxPlayers }) => {
@@ -2488,13 +2578,27 @@ function renderLobbyPlayers(players) {
     if (!p) return;
     const isHost = idx === 0;
     const row = document.createElement('div');
-    row.className = 'lobby-player' + (isHost ? ' host' : '');
+    var classes = 'lobby-player';
+    if (isHost) classes += ' host';
+    if (p.ready) classes += ' ready';
+    row.className = classes;
+
+    var readyBadge = '';
+    if (p.connected) {
+      if (p.ready) {
+        readyBadge = '<span class="ready-badge ready">&#x2714; Pronto</span>';
+      } else {
+        readyBadge = '<span class="ready-badge not-ready">&#x23F3; Aguardando...</span>';
+      }
+    }
+
     row.innerHTML =
       '<img class="lobby-player-flag" src="' + flagUrl(p.flagCode) + '" alt="">' +
       '<div class="lobby-player-info">' +
         '<div class="lobby-player-name">' +
           escapeHtml(p.name) +
           (isHost ? '<span class="host-badge">Anfitriao</span>' : '') +
+          readyBadge +
         '</div>' +
         '<div class="lobby-player-meta">' + (p.connected ? 'Conectado' : 'Desconectado') + '</div>' +
       '</div>' +
@@ -3024,6 +3128,14 @@ function resetLobby() {
   state.board = new Array(96).fill('hidden');
   state.cards = new Array(96).fill(null);
   state.flipped = [];
+  state.myReady = false;
+  var btn = $('btn-start');
+  if (btn) {
+    btn.textContent = 'Iniciar Partida';
+    btn.classList.remove('is-ready');
+  }
+  var waitingMsg = $('lobby-waiting-msg');
+  if (waitingMsg) waitingMsg.style.display = 'none';
   $('lobby-room-info').style.display = 'none';
   $('preview-checkbox-container').style.display = '';
   $('join-code').value = '';
@@ -3099,6 +3211,13 @@ socket.on('reconnect_failed', () => {
   } else {
     socket.on('connect', () => socket.emit('identify', { userId: user.id }));
   }
+
+  // Heartbeat: keep last_seen updated so user appears online
+  setInterval(() => {
+    if (socket.connected) {
+      socket.emit('heartbeat', { userId: user.id });
+    }
+  }, 15000);
 
   var recovering = false;
   var path = window.location.pathname;

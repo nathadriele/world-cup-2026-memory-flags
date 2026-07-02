@@ -18,7 +18,7 @@ Jogo da memoria multiplayer com as 48 selecoes da Copa do Mundo 2026, com quiz d
 ## Como testar localmente
 
 ```bash
-git clone
+git clone <repo>
 cd memory-flags-2026
 npm install
 node server.js
@@ -68,9 +68,9 @@ node tests/run-all.js
 3. Start Command: `node server.js`
 4. Plan: Free ou Starter
 
-### Persistencia de dados
+### Persistencia de dados (importante)
 
-O Render **free tier** tem sistema de arquivos efêmero: a cada deploy, os dados do SQLite sao apagados. Para manter as contas de usuario e historico de partidas:
+O Render **free tier** tem sistema de arquivos efemero: a cada deploy, os dados do SQLite sao apagados. Para manter as contas de usuario e historico de partidas:
 
 **Solucao A - Render Persistent Disk (plano Starter $7/mes):**
 - O `render.yaml` ja configura um disk de 1GB em `/var/data`

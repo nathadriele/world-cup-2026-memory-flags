@@ -136,7 +136,7 @@ function createRoom(playerName, flagCode, maxPlayers) {
   const room = {
     code,
     maxPlayers: max,
-    players: [{ id: null, name: playerName, flagCode, deck: [], quizCorrectFirstTry: 0, connected: true }],
+    players: [{ id: null, name: playerName, flagCode, deck: [], quizCorrectFirstTry: 0, connected: true, ready: false }],
     cards: buildCards(),
     board: new Array(96).fill('hidden'),
     flipped: [],
@@ -155,7 +155,8 @@ function createRoom(playerName, flagCode, maxPlayers) {
     previewCards: false,
     previewDone: false,
     pairResolveTimer: null,
-    previewTimers: []
+    previewTimers: [],
+    readySet: new Set()
   };
   rooms.set(code, room);
   return room;
@@ -365,7 +366,7 @@ function resetRoomForNewGame(room) {
   room.currentTurn = 0;
   room.scores = room.players.map(() => 0);
   room.players.forEach(p => {
-    if (p) { p.deck = []; p.quizCorrectFirstTry = 0; }
+    if (p) { p.deck = []; p.quizCorrectFirstTry = 0; p.ready = false; }
   });
   room.active = true;
   room.stats = createStats(room.maxPlayers);
@@ -415,7 +416,7 @@ function getRoomState(room, playerIndex) {
 function emitLobbyUpdate(room) {
   emitAll(room, 'lobby_update', {
     players: room.players.map(p => p ? {
-      name: p.name, flagCode: p.flagCode, connected: p.connected
+      name: p.name, flagCode: p.flagCode, connected: p.connected, ready: !!p.ready
     } : null),
     maxPlayers: room.maxPlayers,
     code: room.code
@@ -436,6 +437,13 @@ io.on('connection', (socket) => {
       onlineUsers.set(socket.id, { userId });
       try { stmts.updateLastSeen.run(userId); } catch (e) {}
       emitOnlineStatus();
+    }
+  });
+
+  // Heartbeat: update last_seen periodically while socket is connected
+  socket.on('heartbeat', ({ userId }) => {
+    if (userId) {
+      try { stmts.updateLastSeen.run(userId); } catch (e) {}
     }
   });
 
@@ -479,7 +487,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    const idx = room.players.push({ id: socket.id, name, flagCode, deck: [], quizCorrectFirstTry: 0, connected: true }) - 1;
+    const idx = room.players.push({ id: socket.id, name, flagCode, deck: [], quizCorrectFirstTry: 0, connected: true, ready: false }) - 1;
     while (room.scores.length < room.players.length) room.scores.push(0);
     playerRooms.set(socket.id, { code: room.code, index: idx });
     socket.join(room.code);
@@ -487,31 +495,84 @@ io.on('connection', (socket) => {
     emitLobbyUpdate(room);
   });
 
-  socket.on('start_game', () => {
+  socket.on('toggle_ready', () => {
     const info = playerRooms.get(socket.id);
     if (!info) return;
     const room = rooms.get(info.code);
     if (!room || room.active) return;
-    const realPlayers = room.players.filter(p => p !== null);
-    room.players = realPlayers;
-    room.scores = room.players.map(() => 0);
-    room.stats = createStats(room.players.length);
-    room.maxPlayers = room.players.length;
-    room.reconnectTimers = {};
+    const player = room.players[info.index];
+    if (!player || !player.connected) return;
 
-    // Fix playerRooms indices for all sockets in this room
-    room.players.forEach((p, i) => {
-      if (p && p.id) {
-        playerRooms.set(p.id, { code: room.code, index: i });
+    // Toggle ready state
+    player.ready = !player.ready;
+    emitLobbyUpdate(room);
+
+    // Check if ALL connected players are ready (need at least 2 ready, or 1 if maxPlayers is 1)
+    const connectedPlayers = room.players.filter(p => p && p.connected);
+    if (connectedPlayers.length === 0) return;
+
+    const allReady = connectedPlayers.every(p => p.ready);
+    if (allReady && connectedPlayers.length >= 1) {
+      // Everyone is ready - start the game!
+      const realPlayers = room.players.filter(p => p !== null);
+      room.players = realPlayers;
+      room.scores = room.players.map(() => 0);
+      room.stats = createStats(room.players.length);
+      room.maxPlayers = room.players.length;
+      room.reconnectTimers = {};
+
+      // Fix playerRooms indices for all sockets in this room
+      room.players.forEach((p, i) => {
+        if (p && p.id) {
+          playerRooms.set(p.id, { code: room.code, index: i });
+        }
+      });
+
+      resetRoomForNewGame(room);
+
+      if (room.previewCards && !room.previewDone) {
+        doCardPreview(room);
+      } else {
+        beginGame(room);
       }
-    });
+    }
+  });
 
-    resetRoomForNewGame(room);
+  socket.on('start_game', () => {
+    // Legacy support: behave like toggle_ready
+    const info = playerRooms.get(socket.id);
+    if (!info) return;
+    const room = rooms.get(info.code);
+    if (!room || room.active) return;
+    const player = room.players[info.index];
+    if (!player || !player.connected) return;
 
-    if (room.previewCards && !room.previewDone) {
-      doCardPreview(room);
-    } else {
-      beginGame(room);
+    player.ready = true;
+    emitLobbyUpdate(room);
+
+    const connectedPlayers = room.players.filter(p => p && p.connected);
+    const allReady = connectedPlayers.every(p => p.ready);
+    if (allReady && connectedPlayers.length >= 1) {
+      const realPlayers = room.players.filter(p => p !== null);
+      room.players = realPlayers;
+      room.scores = room.players.map(() => 0);
+      room.stats = createStats(room.players.length);
+      room.maxPlayers = room.players.length;
+      room.reconnectTimers = {};
+
+      room.players.forEach((p, i) => {
+        if (p && p.id) {
+          playerRooms.set(p.id, { code: room.code, index: i });
+        }
+      });
+
+      resetRoomForNewGame(room);
+
+      if (room.previewCards && !room.previewDone) {
+        doCardPreview(room);
+      } else {
+        beginGame(room);
+      }
     }
   });
 

@@ -55,9 +55,9 @@ async function run() {
     h.assertEqual(r.status, 200);
   });
 
-  await h.test('GET /jogar/sala-XXXX without auth redirects', async () => {
+  await h.test('GET /jogar/sala-XXXX without auth is accessible (200)', async () => {
     const r = await h.httpGet('/jogar/sala-TEST01');
-    h.assertEqual(r.status, 302);
+    h.assertEqual(r.status, 200, 'Room route should be publicly accessible');
   });
 
   await h.test('GET /api/matches returns 200 with array', async () => {
