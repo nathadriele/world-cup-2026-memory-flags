@@ -15,7 +15,7 @@ async function run() {
   // ── Fuzzing: Random Card Indices ──────────────────────
   await h.test('Fuzz: random card indices do not crash server', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     for (let i = 0; i < 20; i++) {
@@ -47,7 +47,7 @@ async function run() {
   // ── Fuzzing: Malformed Payloads ───────────────────────
   await h.test('Fuzz: malformed flip_card payloads', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     // Various malformed payloads
@@ -68,7 +68,7 @@ async function run() {
   // ── Fuzzing: Extremely Large Payload ──────────────────
   await h.test('Fuzz: extremely large cardIndex', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 999999999 });
@@ -111,7 +111,7 @@ async function run() {
   // ── Race: Flip Card Right Before Turn Passes ──────────
   await h.test('Race: flip card just before timeout', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -130,7 +130,7 @@ async function run() {
   // ── Race: Submit Validation Twice Quickly ─────────────
   await h.test('Race: double submit_validation', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -168,7 +168,7 @@ async function run() {
   // ── Unexpected: Submit Validation Without Pair ────────
   await h.test('Exploratory: submit_validation without active pair', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     // Submit validation without any pair
@@ -182,7 +182,7 @@ async function run() {
   // ── Unexpected: Play Again During Active Game ─────────
   await h.test('Exploratory: play_again during active game', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     // Flip a card first
@@ -208,7 +208,7 @@ async function run() {
     sock.emit('create_room', { name: 'Solo', flagCode: 'br', maxPlayers: 2 });
     await h.waitEvent(sock, 'room_created');
 
-    sock.emit('start_game');
+    sock.emit('toggle_ready');
     const gs = await h.waitEvent(sock, 'game_start');
     h.assertEqual(gs.currentTurn, 0, 'Solo game should start');
 
@@ -236,7 +236,7 @@ async function run() {
   // ── Unexpected: Join Room After Game Started ──────────
   await h.test('Exploratory: join room after game started', async () => {
     const { sockets, roomCode } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     // New player tries to join active game

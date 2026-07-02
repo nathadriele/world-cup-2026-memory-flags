@@ -106,7 +106,7 @@ async function run() {
 
   await h.test('Create -> Start Game -> Flip Card -> All see it', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
 
     // Both should get game_start
     const gs1 = await h.waitEvent(sockets[0], 'game_start');
@@ -126,7 +126,7 @@ async function run() {
 
   await h.test('Create -> Start -> Flip wrong pair -> Turn passes', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -201,7 +201,7 @@ async function run() {
     const { sockets } = await h.setupRoom(2);
 
     // Start game
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs1 = await h.waitEvent(sockets[0], 'game_start');
     h.assertEqual(gs1.currentTurn, 0, 'First game starts at turn 0');
 
@@ -219,7 +219,7 @@ async function run() {
   // ── Socket Reconnection Integration ───────────────────
   await h.test('Player disconnects mid-game -> reconnect_room restores state', async () => {
     const { sockets, roomCode, names } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
     await h.sleep(300);
@@ -275,9 +275,11 @@ async function run() {
 
     h.assert(roomA.code !== roomB.code, 'Rooms should have different codes');
 
-    // Start both games
-    sock1.emit('start_game');
-    sock3.emit('start_game');
+    // Start both games - all players toggle_ready
+    sock1.emit('toggle_ready');
+    sock2.emit('toggle_ready');
+    sock3.emit('toggle_ready');
+    sock4.emit('toggle_ready');
 
     const gsA = await h.waitEvent(sock1, 'game_start');
     const gsB = await h.waitEvent(sock3, 'game_start');
@@ -306,19 +308,22 @@ async function run() {
     h.assertEqual(me1.json.user.id, me3.json.user.id, 'User ID should be consistent');
   });
 
-  // ── Start game requires host ──────────────────────────
-  await h.test('start_game only works for host (player 0)', async () => {
+  // ── Start game requires all players ready ─────────────
+  await h.test('Game starts when all players toggle_ready', async () => {
     const { sockets } = await h.setupRoom(3);
-    // Player 2 tries to start
-    const gsP = h.waitEventOrNull(sockets[0], 'game_start', 2000);
-    sockets[2].emit('start_game');
-    const result = await gsP;
-    h.assert(!result, 'Non-host starting game should be ignored');
 
-    // Host starts
-    sockets[0].emit('start_game');
+    // Only player 0 and 1 toggle ready - game should NOT start yet
+    const gsP = h.waitEventOrNull(sockets[0], 'game_start', 2000);
+    sockets[0].emit('toggle_ready');
+    await h.sleep(50);
+    sockets[1].emit('toggle_ready');
+    const result = await gsP;
+    h.assert(!result, 'Game should not start with only 2 of 3 players ready');
+
+    // Player 2 toggles ready - game should start
+    sockets[2].emit('toggle_ready');
     const gs = await h.waitEvent(sockets[0], 'game_start');
-    h.assertEqual(gs.currentTurn, 0, 'Host start should work');
+    h.assertEqual(gs.currentTurn, 0, 'Game should start when all ready');
 
     h.cleanupSockets(sockets);
   });
@@ -326,7 +331,7 @@ async function run() {
   // ── Reveal cards privacy ──────────────────────────────
   await h.test('reveal_cards_request only sends to requesting player', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 

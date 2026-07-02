@@ -287,7 +287,7 @@ async function run() {
   // ── Card Index Boundary ───────────────────────────────
   await h.test('Negative card index rejected', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     const flipP = h.waitEventOrNull(sockets[0], 'card_flipped', 2000);
@@ -299,7 +299,7 @@ async function run() {
 
   await h.test('Out-of-range card index (>95) rejected', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     const flipP = h.waitEventOrNull(sockets[0], 'card_flipped', 2000);
@@ -311,7 +311,7 @@ async function run() {
 
   await h.test('Flipping already-flipped card rejected', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 0 });
@@ -328,7 +328,7 @@ async function run() {
 
   await h.test('Flipping more than 2 cards blocked', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 0 });
@@ -391,7 +391,7 @@ async function run() {
   // ── Flip Card During Validation ───────────────────────
   await h.test('Flipping card during pending validation blocked', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 

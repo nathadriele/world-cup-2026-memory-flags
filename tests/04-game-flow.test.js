@@ -13,7 +13,7 @@ async function run() {
 
   await h.test('Game starts - all players receive game_start', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
 
     const gs1 = await h.waitEvent(sockets[0], 'game_start');
     const gs2 = await h.waitEvent(sockets[1], 'game_start');
@@ -26,7 +26,7 @@ async function run() {
 
   await h.test('Flip first card - all receive card_flipped', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -41,7 +41,7 @@ async function run() {
 
   await h.test('Non-turn player cannot flip cards', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -61,7 +61,7 @@ async function run() {
 
   await h.test('Cannot flip 3 cards at once (lockBoard)', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -90,7 +90,7 @@ async function run() {
 
   await h.test('Flipping already-flipped card is blocked', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -113,7 +113,7 @@ async function run() {
 
   await h.test('Flipping collected card is blocked', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -128,7 +128,7 @@ async function run() {
 
   await h.test('Game sends board state on start', async () => {
     const { sockets } = await h.setupRoom(3);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
 
     h.assert(gs.players, 'Should have players array');
@@ -139,7 +139,7 @@ async function run() {
 
   await h.test('Turn timer event received', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     const timer = await h.waitEventOrNull(sockets[0], 'turn_timer', 5000);
@@ -150,7 +150,7 @@ async function run() {
 
   await h.test('Flip card with invalid index is rejected', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: -1 });
@@ -165,7 +165,7 @@ async function run() {
 
   await h.test('4P game - all receive game_start with same board', async () => {
     const { sockets } = await h.setupRoom(4);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
 
     const results = [];
     for (let i = 0; i < 4; i++) {
@@ -181,7 +181,7 @@ async function run() {
     const { sockets } = await h.setupRoom(2);
 
     // Guest tries to start - server currently allows any player to start
-    sockets[1].emit('start_game');
+    await h.startGame(sockets);
     const result = await h.waitEventOrNull(sockets[1], 'game_start', 3000);
     // Document current behavior: server allows non-host to start
     // If this changes to blocked, update accordingly
@@ -195,7 +195,7 @@ async function run() {
 
   await h.test('Card flip propagates to all players', async () => {
     const { sockets } = await h.setupRoom(3);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     for (let i = 0; i < 3; i++) await h.waitEvent(sockets[i], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 0 });

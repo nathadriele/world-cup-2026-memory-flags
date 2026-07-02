@@ -25,7 +25,7 @@ async function run() {
 
   await h.test('Board has 96 cards (48 pairs)', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
     h.assert(Array.isArray(gs.players), 'Should have players array');
 
@@ -36,7 +36,7 @@ async function run() {
 
   await h.test('Each card flip reveals flagCode and countryName', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 0 });
@@ -116,7 +116,7 @@ async function run() {
   // ── Turn Rotation Logic ───────────────────────────────
   await h.test('Game starts with currentTurn=0', async () => {
     const { sockets } = await h.setupRoom(3);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     for (let i = 0; i < 3; i++) {
       const gs = await h.waitEvent(sockets[i], 'game_start');
       h.assertEqual(gs.currentTurn, 0, 'Player ' + i + ' should see turn=0');
@@ -126,7 +126,7 @@ async function run() {
 
   await h.test('Turn timer starts on game start', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     const timer = await h.waitEvent(sockets[0], 'turn_timer');
     h.assert(typeof timer.remaining === 'number', 'Should have remaining time');
@@ -136,7 +136,7 @@ async function run() {
 
   await h.test('Turn timer counts down', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     const t1 = await h.waitEvent(sockets[0], 'turn_timer');
     await h.sleep(2200);
@@ -148,7 +148,7 @@ async function run() {
   // ── Pair Validation Flow ──────────────────────────────
   await h.test('Correct validation keeps turn + scores', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -201,7 +201,7 @@ async function run() {
 
   await h.test('Wrong validation passes turn', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -247,7 +247,7 @@ async function run() {
   // ── Game State Shape ──────────────────────────────────
   await h.test('game_start event has correct shape', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
 
     h.assert(Array.isArray(gs.players), 'Should have players array');
@@ -277,7 +277,7 @@ async function run() {
 
   await h.test('card_flipped event has correct shape', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 5 });
@@ -292,7 +292,7 @@ async function run() {
 
   await h.test('turn_timer event has remaining field', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     const timer = await h.waitEvent(sockets[0], 'turn_timer');
     h.assert(typeof timer.remaining === 'number', 'Should have remaining number');
@@ -303,7 +303,7 @@ async function run() {
   // ── Preview Mode ──────────────────────────────────────
   await h.test('Preview mode triggers preview_warning', async () => {
     const { sockets } = await h.setupRoom(2, { previewCards: true });
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const preview = await h.waitEvent(sockets[0], 'preview_warning');
     h.assert(typeof preview.seconds === 'number', 'Should have seconds');
     h.assert(preview.cards && typeof preview.cards === 'object', 'Should have cards map');
@@ -313,7 +313,7 @@ async function run() {
 
   await h.test('Preview mode triggers preview_reveal after warning', async () => {
     const { sockets } = await h.setupRoom(2, { previewCards: true });
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'preview_warning');
     const reveal = await h.waitEvent(sockets[0], 'preview_reveal', 15000);
     h.assert(typeof reveal.seconds === 'number', 'Should have reveal seconds');
@@ -322,7 +322,7 @@ async function run() {
 
   await h.test('Preview mode triggers game_start after full preview', async () => {
     const { sockets } = await h.setupRoom(2, { previewCards: true });
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'preview_warning');
     await h.waitEvent(sockets[0], 'preview_reveal', 15000);
     await h.waitEvent(sockets[0], 'preview_done', 20000);
@@ -334,7 +334,7 @@ async function run() {
   // ── Room State on Reconnect ───────────────────────────
   await h.test('reconnect_state has full room data', async () => {
     const { sockets, roomCode, names } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -364,7 +364,7 @@ async function run() {
   // ── Play Again ────────────────────────────────────────
   await h.test('play_again resets game state', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.sleep(500);
 
@@ -413,13 +413,13 @@ async function run() {
   // ── Start game twice prevented ────────────────────────
   await h.test('Cannot start game twice', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.sleep(500);
 
     // Try starting again - should be silently ignored
     const gsP = h.waitEventOrNull(sockets[0], 'game_start', 2000);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const result = await gsP;
     h.assert(!result, 'Second start_game should be ignored');
     h.cleanupSockets(sockets);
@@ -428,7 +428,7 @@ async function run() {
   // ── Validation timer ──────────────────────────────────
   await h.test('validation_timer event fires on pair found', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 

@@ -37,7 +37,7 @@ async function run() {
   // ── Rapid Card Flips ──────────────────────────────────
   await h.test('Rapid sequential card flips (10 cards)', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     let flipCount = 0;
@@ -90,7 +90,7 @@ async function run() {
     for (let g = 0; g < 4; g++) {
       promises.push((async () => {
         const { sockets } = await h.setupRoom(2);
-        sockets[0].emit('start_game');
+        await h.startGame(sockets);
         const gs = await h.waitEvent(sockets[0], 'game_start');
         h.cleanupSockets(sockets);
         return gs;
@@ -243,7 +243,7 @@ async function run() {
   // ── Burst Events ──────────────────────────────────────
   await h.test('Burst: 50 flip_card events in rapid succession', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     let eventCount = 0;

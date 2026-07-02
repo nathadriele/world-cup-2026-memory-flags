@@ -14,7 +14,7 @@ async function run() {
 
   await h.test('2P: Game starts with player 0', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
     h.assertEqual(gs.currentTurn, 0, 'Should start with player 0');
     h.cleanupSockets(sockets);
@@ -22,7 +22,7 @@ async function run() {
 
   await h.test('2P: Wrong pair passes turn 0 -> 1', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -50,7 +50,7 @@ async function run() {
 
   await h.test('3P: Sequential rotation 0 -> 1 -> 2 -> 0', async () => {
     const { sockets } = await h.setupRoom(3);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
     await h.waitEvent(sockets[2], 'game_start');
@@ -89,7 +89,7 @@ async function run() {
 
   await h.test('4P: Turn cycles through 4 players', async () => {
     const { sockets } = await h.setupRoom(4);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     for (let i = 0; i < 4; i++) await h.waitEvent(sockets[i], 'game_start');
 
     const seen = [0];
@@ -123,7 +123,7 @@ async function run() {
 
   await h.test('5P: Turn passes sequentially', async () => {
     const { sockets } = await h.setupRoom(5);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     for (let i = 0; i < 5; i++) await h.waitEvent(sockets[i], 'game_start');
 
     let currentTurn = 0;
@@ -160,7 +160,7 @@ async function run() {
 
   await h.test('2P: Non-turn player blocked from flipping', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -178,7 +178,7 @@ async function run() {
 
   await h.test('4P: All players see currentTurn=0 on new game', async () => {
     const { sockets } = await h.setupRoom(4);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
 
     for (let i = 0; i < 4; i++) {
       const gs = await h.waitEvent(sockets[i], 'game_start');
@@ -189,7 +189,7 @@ async function run() {
 
   await h.test('2P: turn_changed event has correct shape', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 

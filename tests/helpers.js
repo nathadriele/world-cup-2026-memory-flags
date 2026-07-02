@@ -159,6 +159,12 @@ function createSocket(cookie) {
 }
 
 function waitEvent(socket, event, timeout) {
+  // If startGame already captured this event, return the cached data
+  if (event === 'game_start' && socket._gameStartData !== undefined) {
+    const data = socket._gameStartData;
+    delete socket._gameStartData;
+    return Promise.resolve(data);
+  }
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => reject(new Error('Timeout waiting for ' + event)), timeout || 8000);
     socket.once(event, (data) => { clearTimeout(t); resolve(data); });
@@ -166,6 +172,11 @@ function waitEvent(socket, event, timeout) {
 }
 
 function waitEventOrNull(socket, event, timeout) {
+  if (event === 'game_start' && socket._gameStartData !== undefined) {
+    const data = socket._gameStartData;
+    delete socket._gameStartData;
+    return Promise.resolve(data);
+  }
   return new Promise((resolve) => {
     const t = setTimeout(() => resolve(null), timeout || 8000);
     socket.once(event, (data) => { clearTimeout(t); resolve(data); });
@@ -215,6 +226,38 @@ async function setupRoom(numPlayers, opts) {
   return { sockets, roomCode, names, flags, cookies, userIds };
 }
 
+async function startGame(sockets) {
+  // Emit toggle_ready for all but the last player first.
+  // Then register a catch-all game_start collector on each socket BEFORE
+  // the last player toggles, since that triggers game_start.
+  for (let i = 0; i < sockets.length - 1; i++) {
+    sockets[i].emit('toggle_ready');
+    await sleep(50);
+  }
+
+  // Register collectors that store game_start data on the socket object.
+  // waitEvent() checks this stored data first before registering a listener.
+  sockets.forEach(s => {
+    s._pendingGameStart = new Promise(resolve => {
+      const handler = (data) => {
+        s._gameStartData = data;
+        resolve(data);
+      };
+      s.once('game_start', handler);
+    });
+  });
+
+  // Last player toggles ready - triggers game_start
+  sockets[sockets.length - 1].emit('toggle_ready');
+
+  // Wait briefly for game_start to arrive
+  await Promise.race([
+    Promise.all(sockets.map(s => s._pendingGameStart)),
+    sleep(5000)
+  ]);
+  await sleep(100); // Extra small buffer for late arrivals
+}
+
 function cleanupSockets(sockets) {
   sockets.forEach(s => {
     try { s.disconnect(); } catch (e) {}
@@ -228,5 +271,5 @@ module.exports = {
   httpReq, httpGet, getCookie,
   registerUser, loginUser, logoutUser, getMe,
   createSocket, waitEvent, waitEventOrNull,
-  setupRoom, cleanupSockets
+  setupRoom, startGame, cleanupSockets
 };

@@ -653,7 +653,7 @@ io.on('connection', (socket) => {
           }
           emitAll(room, 'turn_changed', { currentTurn: room.currentTurn, reason: 'wrong_pair' });
           if (room.active) startTurnTimer(room);
-        }, 3800);
+        }, 1500);
       } else {
         const trivia = getTrivia(ca.code);
         room.pendingValidation = {

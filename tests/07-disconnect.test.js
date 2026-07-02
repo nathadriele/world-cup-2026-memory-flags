@@ -32,7 +32,7 @@ async function run() {
 
   await h.test('Reconnect to existing room - restores state', async () => {
     const { sockets, roomCode, cookies, userIds } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -137,7 +137,7 @@ async function run() {
 
   await h.test('Socket disconnect cleans up on server', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 

@@ -746,15 +746,19 @@
 }
 
 .mem-card.wrong {
-  animation: wrongShake 0.45s ease, errorGlow 0.7s ease;
+  animation: wrongZoomShake 0.9s ease;
+  z-index: 10;
 }
 
-@keyframes wrongShake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
+@keyframes wrongZoomShake {
+  0% { transform: scale(1) translateX(0); }
+  10% { transform: scale(1.15) translateX(0); box-shadow: 0 0 0 0 rgba(239,35,60,0.5); }
+  20% { transform: scale(1.15) translateX(-8px); box-shadow: 0 0 20px 6px rgba(239,35,60,0.6); }
+  35% { transform: scale(1.15) translateX(8px); box-shadow: 0 0 20px 6px rgba(239,35,60,0.6); }
+  50% { transform: scale(1.15) translateX(-6px); box-shadow: 0 0 20px 6px rgba(239,35,60,0.6); }
+  65% { transform: scale(1.15) translateX(6px); box-shadow: 0 0 18px 5px rgba(239,35,60,0.5); }
+  80% { transform: scale(1.1) translateX(-3px); box-shadow: 0 0 12px 3px rgba(239,35,60,0.4); }
+  100% { transform: scale(1) translateX(0); box-shadow: 0 0 0 0 rgba(239,35,60,0); }
 }
 
 @keyframes errorGlow {
@@ -891,6 +895,29 @@
   padding: 18px;
   margin-bottom: 22px;
   border-left: 4px solid var(--accent-1);
+}
+
+.val-spectator-msg {
+  display: none;
+  text-align: center;
+  padding: 10px 16px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  animation: pulse-waiting 1.8s ease-in-out infinite;
+}
+
+.val-spectator-msg.show {
+  display: block;
+}
+
+.validation-box.spectator .val-tf-buttons,
+.validation-box.spectator .val-confirm-row {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .val-statement-label {
@@ -1459,7 +1486,7 @@
 .center-popup.fade-out { animation: popOutScale 0.3s ease forwards; }
 
 .popup-turn-flag { margin-bottom: 12px; }
-.popup-turn-msg { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+.popup-turn-msg { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); }
 
 /* === Revelar Cartas Button === */
 .btn-peek-cards {
@@ -1879,6 +1906,7 @@
           <button class="btn btn-primary btn-block" id="val-confirm" disabled>Confirmar Resposta</button>
         </div>
         <p class="val-timeout-msg" id="val-timeout-msg">Tempo esgotado! O par nao foi confirmado.</p>
+        <p class="val-spectator-msg" id="val-spectator-msg">Aguardando resposta do jogador...</p>
       </div>
     </div>
 
@@ -2302,8 +2330,11 @@ socket.on('cards_returned', ({ indices, reason }) => {
       if (el) {
         el.classList.add('wrong');
         setTimeout(() => {
-          el.classList.remove('wrong', 'flipped', 'disabled');
-        }, 1400);
+          el.classList.remove('wrong');
+        }, 900);
+        setTimeout(() => {
+          el.classList.remove('flipped', 'disabled');
+        }, 1100);
       }
     });
   } else if (reason === 'turn_pass') {
@@ -2325,7 +2356,7 @@ socket.on('cards_returned', ({ indices, reason }) => {
   state.flipped = [];
   // If in peek mode, re-reveal returned cards after animation
   if (state.peekMode) {
-    var delay = reason === 'wrong_pair' ? 1500 : 100;
+    var delay = reason === 'wrong_pair' ? 1200 : 100;
     setTimeout(function() {
       indices.forEach(function(i) {
         if (state.board[i] === 'hidden' && state.cards[i]) {
@@ -2363,7 +2394,7 @@ socket.on('turn_changed', ({ currentTurn, reason }) => {
       '<div class="popup-turn-msg">' +
         (isMe ? '<strong>Sua vez!</strong>' : 'Vez de <strong>' + escapeHtml(playerName) + '</strong>') +
       '</div>';
-    showCenterPopup(popupHtml, 2000);
+    showCenterPopup(popupHtml, 3000);
   }
 });
 
@@ -2759,12 +2790,13 @@ function updateTurnTimer(remaining) {
 }
 
 function openValidation(countryName, flagCode, statement) {
+  var isSpectator = state.currentTurn !== state.myIndex;
   state.valTruthChoice = null;
   state.valTimeLeft = 30;
   $('val-true').classList.remove('selected-true', 'correct', 'wrong');
   $('val-false').classList.remove('selected-false', 'correct', 'wrong');
-  $('val-true').disabled = false;
-  $('val-false').disabled = false;
+  $('val-true').disabled = isSpectator;
+  $('val-false').disabled = isSpectator;
   $('val-confirm').disabled = true;
   $('val-statement-text').textContent = statement;
   $('val-flag-display').innerHTML =
@@ -2772,6 +2804,19 @@ function openValidation(countryName, flagCode, statement) {
     '<span class="val-country-name">' + escapeHtml(countryName) + '</span>';
   $('val-timeout-msg').classList.remove('show');
   $('val-circle-timer').classList.remove('warn', 'danger');
+  var valBox = document.querySelector('.validation-box');
+  var spectatorMsg = $('val-spectator-msg');
+  if (isSpectator) {
+    valBox.classList.add('spectator');
+    spectatorMsg.classList.add('show');
+    var turnPlayerName = (state.players && state.players[state.currentTurn])
+      ? state.players[state.currentTurn].displayName
+      : 'jogador';
+    spectatorMsg.textContent = 'Aguardando resposta de ' + escapeHtml(turnPlayerName) + '...';
+  } else {
+    valBox.classList.remove('spectator');
+    spectatorMsg.classList.remove('show');
+  }
   updateValTimer(30);
   $('validation-overlay').classList.add('active');
 }

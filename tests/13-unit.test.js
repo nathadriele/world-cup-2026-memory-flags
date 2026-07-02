@@ -365,10 +365,10 @@ async function run() {
     h.assert(src.includes("Array(96).fill('hidden')"), 'Board should be 96 cards');
   });
 
-  await h.test('Server: pair resolve delay is 3800ms', async () => {
+  await h.test('Server: pair resolve delay is 1500ms', async () => {
     const fs = require('fs');
     const src = fs.readFileSync(__dirname + '/../server.js', 'utf8');
-    h.assert(src.includes('3800'), 'Should have 3800ms delay for wrong pair return');
+    h.assert(src.includes('1500'), 'Should have 1500ms delay for wrong pair return');
   });
 
   await h.test('Server: genCode generates 6-char codes', async () => {

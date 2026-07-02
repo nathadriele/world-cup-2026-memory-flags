@@ -49,8 +49,9 @@ async function run() {
     const lobby = await lobbyBefore;
     h.assert(lobby.players.length === 2, 'Lobby should show 2 players');
 
-    // 6. Start game
-    sock1.emit('start_game');
+    // 6. Start game - both players toggle_ready
+    sock1.emit('toggle_ready');
+    sock2.emit('toggle_ready');
     const gs1 = await h.waitEvent(sock1, 'game_start');
     const gs2 = await h.waitEvent(sock2, 'game_start');
 
@@ -73,7 +74,7 @@ async function run() {
   // ── E2E: Multiple Turns with Correct Rotation ────────
   await h.test('E2E: 3-player game with multiple turn passes', async () => {
     const { sockets } = await h.setupRoom(3);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
 
     for (let i = 0; i < 3; i++) {
       await h.waitEvent(sockets[i], 'game_start');
@@ -112,7 +113,7 @@ async function run() {
   // ── E2E: Disconnect and Reconnect ────────────────────
   await h.test('E2E: Player disconnects and room handles it', async () => {
     const { sockets, roomCode } = await h.setupRoom(3);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     for (let i = 0; i < 3; i++) {
       await h.waitEvent(sockets[i], 'game_start');
     }
@@ -148,7 +149,7 @@ async function run() {
     const { sockets } = await h.setupRoom(2);
 
     // First game
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs1 = await h.waitEvent(sockets[0], 'game_start');
     h.assertEqual(gs1.currentTurn, 0, 'Game 1 starts at turn 0');
 
@@ -174,7 +175,7 @@ async function run() {
   // ── E2E: 8-Player Room (Maximum) ─────────────────────
   await h.test('E2E: Full 8-player room creation and game start', async () => {
     const { sockets } = await h.setupRoom(8);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
 
     for (let i = 0; i < 8; i++) {
       const gs = await h.waitEvent(sockets[i], 'game_start');
@@ -192,7 +193,7 @@ async function run() {
   // ── E2E: Preview Mode Full Flow ───────────────────────
   await h.test('E2E: Preview cards flow (warning -> reveal -> game)', async () => {
     const { sockets } = await h.setupRoom(2, { previewCards: true });
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
 
     // 1. Preview warning
     const warning = await h.waitEvent(sockets[0], 'preview_warning');
@@ -215,7 +216,7 @@ async function run() {
   // ── E2E: Validation Correct Flow ─────────────────────
   await h.test('E2E: Pair found -> correct validation -> score increases', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -272,7 +273,7 @@ async function run() {
   // ── E2E: Wrong Pair Returns Cards ────────────────────
   await h.test('E2E: Wrong pair -> cards_returned -> turn passes', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -305,7 +306,7 @@ async function run() {
   // ── E2E: 4-Player Sequential Turn Rotation ───────────
   await h.test('E2E: 4P sequential turns 0->1->2->3->0', async () => {
     const { sockets } = await h.setupRoom(4);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     for (let i = 0; i < 4; i++) await h.waitEvent(sockets[i], 'game_start');
 
     const seenTurns = [0];

@@ -189,7 +189,7 @@ async function run() {
   // ── Card Index Boundaries ─────────────────────────────
   await h.test('Card index 0 is valid', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 0 });
@@ -200,7 +200,7 @@ async function run() {
 
   await h.test('Card index 95 is valid', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     sockets[0].emit('flip_card', { cardIndex: 95 });
@@ -360,14 +360,19 @@ async function run() {
     sock.disconnect();
   });
 
-  // ── Start Game When Not Host ──────────────────────────
-  await h.test('Non-host player starting game is ignored', async () => {
+  // ── Start Game Requires All Players Ready ─────────────
+  await h.test('Game starts only when all players toggle_ready', async () => {
     const { sockets } = await h.setupRoom(2);
-    // Player 1 (not host) tries to start
+    // Only player 0 toggles ready - game should NOT start
     const gsP = h.waitEventOrNull(sockets[0], 'game_start', 2000);
-    sockets[1].emit('start_game');
+    sockets[0].emit('toggle_ready');
     const result = await gsP;
-    h.assert(!result, 'Non-host start_game should be ignored');
+    h.assert(!result, 'Game should not start with only 1 of 2 players ready');
+
+    // Now player 1 toggles ready - game should start
+    sockets[1].emit('toggle_ready');
+    const gs = await h.waitEvent(sockets[0], 'game_start');
+    h.assertEqual(gs.currentTurn, 0, 'Game should start when all ready');
     h.cleanupSockets(sockets);
   });
 

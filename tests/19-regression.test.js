@@ -56,11 +56,11 @@ async function run() {
     h.assert(src.includes('io.to(room.code).emit'), 'Should use Socket.IO room broadcast');
   });
 
-  // ── BUG: Card flip delay is 3800ms (not 5800ms) ───────
-  await h.test('REGRESSION: Wrong pair return delay is 3800ms', async () => {
+  // ── BUG: Card flip delay is 1500ms (changed from 3800ms for faster UX) ──
+  await h.test('REGRESSION: Wrong pair return delay is 1500ms', async () => {
     const fs = require('fs');
     const src = fs.readFileSync(__dirname + '/../server.js', 'utf8');
-    h.assert(src.includes('3800'), 'Should use 3800ms delay');
+    h.assert(src.includes('1500'), 'Should use 1500ms delay');
     h.assert(!src.includes('5800'), 'Should NOT use old 5800ms delay');
   });
 
@@ -142,7 +142,7 @@ async function run() {
   // ── BUG: Non-turn player blocked from flipping ────────
   await h.test('REGRESSION: Non-turn player cannot flip', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     const gs = await h.waitEvent(sockets[0], 'game_start');
     await h.waitEvent(sockets[1], 'game_start');
 
@@ -238,7 +238,7 @@ async function run() {
   // ── BUG: turn_timer fires correctly ───────────────────
   await h.test('REGRESSION: turn_timer event has decreasing values', async () => {
     const { sockets } = await h.setupRoom(2);
-    sockets[0].emit('start_game');
+    await h.startGame(sockets);
     await h.waitEvent(sockets[0], 'game_start');
 
     const timers = [];
