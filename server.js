@@ -66,7 +66,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   pingTimeout: 60000,
-  pingInterval: 15000
+  pingInterval: 15000,
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'],
+  allowUpgrades: true
 });
 
 const PORT = process.env.PORT || 3000;
@@ -165,8 +172,13 @@ function clearTimers(room) {
 }
 
 function emitAll(room, event, payload) {
+  // Use Socket.IO room broadcast (most reliable for production)
+  io.to(room.code).emit(event, payload);
+  // Also emit to individual players as fallback (in case socket.join wasn't called)
   room.players.forEach(p => {
-    if (p && p.id) io.to(p.id).emit(event, payload);
+    if (p && p.id) {
+      io.to(p.id).emit(event, payload);
+    }
   });
 }
 
@@ -580,7 +592,7 @@ io.on('connection', (socket) => {
           }
           emitAll(room, 'turn_changed', { currentTurn: room.currentTurn, reason: 'wrong_pair' });
           if (room.active) startTurnTimer(room);
-        }, 5800);
+        }, 3800);
       } else {
         const trivia = getTrivia(ca.code);
         room.pendingValidation = {
@@ -831,6 +843,6 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Memory Cup 2026 rodando na porta ${PORT}`);
 });

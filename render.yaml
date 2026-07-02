@@ -5,3 +5,15 @@ services:
     buildCommand: npm install
     startCommand: node server.js
     plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Set DB_PATH to a persistent disk path to survive deploys
+      # Requires Starter plan ($7/mo) with a disk mounted at /var/data
+      # On free tier: data will reset on each deploy (Render limitation)
+      - key: DB_PATH
+        value: /var/data/memorycup.db
+    disks:
+      - name: memorycup-data
+        mountPath: /var/data
+        sizeGB: 1

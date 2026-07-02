@@ -2,10 +2,14 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const dataDir = path.join(__dirname, '..', 'data');
+// Use DB_PATH from environment (for Render persistent disk) or default to local data dir
+// On Render, set DB_PATH=/var/data/memorycup.db and mount a persistent disk at /var/data
+const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'data', 'memorycup.db');
+const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new Database(path.join(dataDir, 'memorycup.db'));
+console.log(`[DB] Using database at: ${dbPath}`);
+const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');

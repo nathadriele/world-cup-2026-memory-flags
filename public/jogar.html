@@ -1846,7 +1846,15 @@
 <script>
 const $ = id => document.getElementById(id);
 
-const socket = io({ reconnection: true, reconnectionAttempts: 10, reconnectionDelay: 1000, reconnectionDelayMax: 5000 });
+const socket = io({
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  transports: ['websocket', 'polling'],
+  upgrade: true,
+  rememberUpgrade: true
+});
 
 const state = {
   user: null,
@@ -2053,7 +2061,17 @@ $('val-confirm').addEventListener('click', () => {
 });
 
 socket.on('connect', () => {
-  if (state.user) socket.emit('identify', { userId: state.user.id });
+  // Send identify as soon as we have a user (may be delayed if still loading)
+  if (state.user) {
+    socket.emit('identify', { userId: state.user.id });
+  }
+  // If in a room, re-join automatically after reconnection
+  if (state.roomCode && state.active) {
+    // Try to reconnect to the room
+    if (state.user) {
+      socket.emit('identify', { userId: state.user.id });
+    }
+  }
 });
 
 socket.on('room_created', ({ code, playerIndex, maxPlayers }) => {

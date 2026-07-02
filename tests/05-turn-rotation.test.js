@@ -56,7 +56,7 @@ async function run() {
     await h.waitEvent(sockets[2], 'game_start');
 
     let currentTurn = 0;
-    const order = [0];
+    let lastPlayerWhoLostTurn = 0;
 
     for (let round = 0; round < 3; round++) {
       const turnP = h.waitEventOrNull(sockets[0], 'turn_changed', 12000);
@@ -73,12 +73,15 @@ async function run() {
       ]);
 
       if (result.ev === 'turn_changed' && result.data) {
+        // Turn passed: the player who just played lost their turn
+        // Next player should be (lastPlayerWhoLostTurn + 1) % 3
+        const expected = (lastPlayerWhoLostTurn + 1) % 3;
         currentTurn = result.data.currentTurn;
-        order.push(currentTurn);
-        const expected = (order[order.length - 2] + 1) % 3;
         h.assertEqual(currentTurn, expected, 'Turn should go to ' + expected + ' got ' + currentTurn);
+        lastPlayerWhoLostTurn = currentTurn;
       } else {
-        console.log('    (round ' + round + ': pair found, same player)');
+        // Pair found: same player keeps the turn, no rotation expected
+        console.log('    (round ' + round + ': pair found, same player continues)');
       }
     }
     h.cleanupSockets(sockets);
